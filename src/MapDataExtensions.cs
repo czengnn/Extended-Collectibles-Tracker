@@ -6,6 +6,8 @@ using HUD;
 using MoreSlugcats;
 using UnityEngine;
 
+using ExtendedCollectiblesTracker.Core;
+
 namespace ExtendedCollectiblesTracker {
 	static class MapDataExtensions {
 		public class Extension {
@@ -159,7 +161,12 @@ namespace ExtendedCollectiblesTracker {
 				return;
 			}
 
-			RegionState currentRegion = rainWorld.progression.currentSaveState.regionStates[extendedSelf.region];
+			RegionState[] regionStates = rainWorld.progression.currentSaveState.regionStates;
+			if (!RegionIndex.IsValid(extendedSelf.region, regionStates.Length)) {
+				return;
+			}
+
+			RegionState currentRegion = regionStates[extendedSelf.region];
 			if (currentRegion == null || currentRegion.savedObjects == null) {
 				return;
 			}
@@ -197,7 +204,12 @@ namespace ExtendedCollectiblesTracker {
 				}
 			}
 
-			foreach (PersistentObjectTracker trackedObject in rainWorld.progression.currentSaveState.objectTrackers) {
+			var objectTrackers = rainWorld.progression.currentSaveState.objectTrackers;
+			if (objectTrackers == null) {
+				return;
+			}
+
+			foreach (PersistentObjectTracker trackedObject in objectTrackers) {
 				if (trackedObject.lastSeenRegion != self.regionName)
 					continue;
 

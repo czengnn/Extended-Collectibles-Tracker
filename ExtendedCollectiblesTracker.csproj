@@ -9,8 +9,19 @@
 </PropertyGroup>
 
   <ItemGroup>
+    <!-- Core is its own project (referenced below) and tests are their own project;
+         both would otherwise also get swept up by this project's default **/*.cs glob. -->
+    <Compile Remove="src\Core\**\*.cs" />
+    <Compile Remove="tests\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="lib\*.dll">
       <Private>false</Private>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="src\Core\ExtendedCollectiblesTracker.Core.csproj" />
   </ItemGroup>
 </Project>

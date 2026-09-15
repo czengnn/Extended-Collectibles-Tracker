@@ -56,6 +56,9 @@ namespace ExtendedCollectiblesTracker {
 					if (regionState != null) {
 						foreach (string savedObject in regionState.savedObjects) {
 							AbstractPhysicalObject abstractPhysicalObject = SaveState.AbstractPhysicalObjectFromString(null, savedObject);
+							if (abstractPhysicalObject == null) {
+								continue;
+							}
 
 							if (denRoomName == abstractPhysicalObject.pos.ResolveRoomName()) {
 								if (abstractPhysicalObject is DataPearl.AbstractDataPearl abstractDataPearl) {
@@ -69,6 +72,9 @@ namespace ExtendedCollectiblesTracker {
 
 					foreach (string pendingObject in presavePendingObjects) {
 						AbstractPhysicalObject abstractPhysicalObject = SaveState.AbstractPhysicalObjectFromString(null, pendingObject);
+						if (abstractPhysicalObject == null) {
+							continue;
+						}
 
 						if (denRoomName == abstractPhysicalObject.pos.ResolveRoomName()) {
 							if (abstractPhysicalObject is DataPearl.AbstractDataPearl abstractDataPearl) {
