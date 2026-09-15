@@ -6,6 +6,8 @@ using HUD;
 using MoreSlugcats;
 using UnityEngine;
 
+using ExtendedCollectiblesTracker.Core;
+
 namespace ExtendedCollectiblesTracker {
 	static class MapDataExtensions {
 		public class Extension {
@@ -160,7 +162,7 @@ namespace ExtendedCollectiblesTracker {
 			}
 
 			RegionState[] regionStates = rainWorld.progression.currentSaveState.regionStates;
-			if (extendedSelf.region < 0 || extendedSelf.region >= regionStates.Length) {
+			if (!RegionIndex.IsValid(extendedSelf.region, regionStates.Length)) {
 				return;
 			}
 

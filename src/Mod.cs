@@ -6,6 +6,8 @@ using MoreSlugcats;
 using RWCustom;
 using UnityEngine;
 
+using ExtendedCollectiblesTracker.Core;
+
 namespace ExtendedCollectiblesTracker {
 	internal static class Mod {
 		internal static ManualLogSource Logger;
@@ -84,11 +86,7 @@ namespace ExtendedCollectiblesTracker {
 		// screen/menu construction already finished, an uncaught exception at this point only ever
 		// breaks our own overlay (map markers, tracker icons) instead of leaving the game soft-locked.
 		static void RunSafely(Action action) {
-			try {
-				action();
-			} catch (Exception e) {
-				Logger.LogError($"[ExtendedCollectiblesTracker] Unhandled exception in extension code: {e}");
-			}
+			SafeRunner.Run(action, e => Logger.LogError($"[ExtendedCollectiblesTracker] Unhandled exception in extension code: {e}"));
 		}
 
 		//
