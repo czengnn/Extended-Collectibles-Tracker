@@ -13,3 +13,7 @@ Sleep screen also has the status of pearls appended under the unlocks for each r
 ## Steam Workshop
 
 [![thumbnail](mod/thumbnail.png)](https://steamcommunity.com/sharedfiles/filedetails/?id=3244633122)
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release notes.
