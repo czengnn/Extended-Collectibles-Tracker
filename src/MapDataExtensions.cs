@@ -186,6 +186,7 @@ namespace ExtendedCollectiblesTracker {
 						collectibleData.room = pos.room;
 						collectibleData.pos = new Vector2(pos.x * 20, pos.y * 20);
 						collectibleData.isRelocated = true;
+						collectibleData.collected = Mod.IsPearlRead(rainWorld, pearlType);
 					} else {
 						extendedSelf.locatedPearls[pearlType] = extendedSelf.collectibleData.Count;
 
@@ -228,6 +229,7 @@ namespace ExtendedCollectiblesTracker {
 						collectibleData.room = pos.room;
 						collectibleData.pos = new Vector2(pos.x * 20, pos.y * 20);
 						collectibleData.isRelocated = true;
+						collectibleData.collected = Mod.IsPearlRead(rainWorld, pearlType);
 					} else {
 						bool pearlRead = Mod.IsPearlRead(rainWorld, pearlType);
 

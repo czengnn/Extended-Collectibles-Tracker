@@ -3,6 +3,8 @@ using HUD;
 
 using UnityEngine;
 
+using ExtendedCollectiblesTracker.Core;
+
 namespace ExtendedCollectiblesTracker {
 	class CollectibleMarker : Map.FadeInMarker {
 		FSprite roomAura;
@@ -12,10 +14,7 @@ namespace ExtendedCollectiblesTracker {
 
 		public CollectibleMarker(Map map, MapDataExtensions.Extension.CollectibleData collectibleData) : base(map, collectibleData.room, collectibleData.pos, 3f) {
 			FShader flatLightShader = map.hud.rainWorld.Shaders["FlatLight"];
-			symbolSprite = new FSprite(collectibleData.isPearl ? 
-				(collectibleData.collected ? "dpOn" : "dpOff") :
-				(collectibleData.collected ? "ctOn" : "ctOff")
-			) {
+			symbolSprite = new FSprite(CollectibleSymbols.GetElementName(collectibleData.isPearl, collectibleData.collected)) {
 				color = collectibleData.color,
 				isVisible = false
 			};
@@ -33,6 +32,26 @@ namespace ExtendedCollectiblesTracker {
 			auraScale = roomCenter.magnitude * 0.02f;
 
 			this.collectibleData = collectibleData;
+		}
+
+		public override void Update() {
+			// collectibleData is shared with MapDataExtensions' collectibleData list, so
+			// LocatePearls (re-run periodically from Map's own Update) mutates it in place
+			// as saved pearls move rooms (e.g. carried into a shelter); pick that up here
+			// since Draw doesn't otherwise learn about it.
+			room = collectibleData.room;
+			inRoomPos = collectibleData.pos;
+
+			IntVector2 roomSize = map.mapData.SizeOfRoom(room);
+			roomCenter = roomSize.ToVector2() * 10f;
+			auraScale = roomCenter.magnitude * 0.02f;
+
+			string expectedElement = CollectibleSymbols.GetElementName(collectibleData.isPearl, collectibleData.collected);
+			if (symbolSprite.element.name != expectedElement) {
+				symbolSprite.element = Futile.atlasManager.GetElementWithName(expectedElement);
+			}
+
+			base.Update();
 		}
 
 		public override void Draw(float timeStacker) {
@@ -74,9 +93,9 @@ namespace ExtendedCollectiblesTracker {
 				symbolSprite.alpha = alpha;
 
 				float anim = (Mathf.Sin((map.counter + timeStacker) / 10) + 3) / 4;
-				if (!collectibleData.collected) {
-					symbolSprite.color = collectibleData.isPearl ? Color.Lerp(Color.white, collectibleData.color, anim) : collectibleData.color * anim;
-				}
+				symbolSprite.color = collectibleData.collected ?
+					collectibleData.color :
+					(collectibleData.isPearl ? Color.Lerp(Color.white, collectibleData.color, anim) : collectibleData.color * anim);
 
 				bkgFade.scale = 10f;
 			}

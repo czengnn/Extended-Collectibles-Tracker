@@ -24,6 +24,7 @@ namespace ExtendedCollectiblesTracker {
 			Futile.atlasManager.LoadAtlas("atlases/uispritesdpt");
 
 			On.HUD.Map.ctor += Map_ctor_HK;
+			On.HUD.Map.Update += Map_Update_HK;
 			// the original constructor was replaced with `ctor_World_RainWorld` in The Watcher update
 			// due to now having an overloaded constructor
 			On.HUD.Map.MapData.ctor_World_RainWorld += MapData_ctor_HK;
@@ -44,6 +45,11 @@ namespace ExtendedCollectiblesTracker {
 			//MapExtensions.Pre_ctor(self, hud, mapData);
 			orig(self, hud, mapData);
 			RunSafely(() => MapExtensions.Post_ctor(self, hud, mapData));
+		}
+
+		static void Map_Update_HK(On.HUD.Map.orig_Update orig, HUD.Map self) {
+			orig(self);
+			RunSafely(() => MapExtensions.Update(self));
 		}
 
 		static void MapData_ctor_HK(On.HUD.Map.MapData.orig_ctor_World_RainWorld orig, HUD.Map.MapData self, World initWorld, RainWorld rainWorld) {
