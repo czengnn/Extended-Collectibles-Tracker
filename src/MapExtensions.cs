@@ -5,6 +5,8 @@ using HUD;
 using RWCustom;
 using UnityEngine;
 
+using ExtendedCollectiblesTracker.Core;
+
 namespace ExtendedCollectiblesTracker {
 	static class MapExtensions {
 
@@ -42,7 +44,7 @@ namespace ExtendedCollectiblesTracker {
 			// re-resolve pearl locations periodically so markers follow pearls that get
 			// carried to a shelter (or otherwise relocated) after the map was built,
 			// instead of staying stuck at their original room forever
-			if (extendedSelf.counter % LocatePearlsRefreshInterval == 0) {
+			if (MapRefresh.ShouldRefresh(extendedSelf.counter, LocatePearlsRefreshInterval)) {
 				self.mapData.LocatePearls(self.hud.rainWorld);
 			}
 		}

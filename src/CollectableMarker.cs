@@ -3,6 +3,8 @@ using HUD;
 
 using UnityEngine;
 
+using ExtendedCollectiblesTracker.Core;
+
 namespace ExtendedCollectiblesTracker {
 	class CollectibleMarker : Map.FadeInMarker {
 		FSprite roomAura;
@@ -12,10 +14,7 @@ namespace ExtendedCollectiblesTracker {
 
 		public CollectibleMarker(Map map, MapDataExtensions.Extension.CollectibleData collectibleData) : base(map, collectibleData.room, collectibleData.pos, 3f) {
 			FShader flatLightShader = map.hud.rainWorld.Shaders["FlatLight"];
-			symbolSprite = new FSprite(collectibleData.isPearl ? 
-				(collectibleData.collected ? "dpOn" : "dpOff") :
-				(collectibleData.collected ? "ctOn" : "ctOff")
-			) {
+			symbolSprite = new FSprite(CollectibleSymbols.GetElementName(collectibleData.isPearl, collectibleData.collected)) {
 				color = collectibleData.color,
 				isVisible = false
 			};
@@ -47,9 +46,7 @@ namespace ExtendedCollectiblesTracker {
 			roomCenter = roomSize.ToVector2() * 10f;
 			auraScale = roomCenter.magnitude * 0.02f;
 
-			string expectedElement = collectibleData.isPearl ?
-				(collectibleData.collected ? "dpOn" : "dpOff") :
-				(collectibleData.collected ? "ctOn" : "ctOff");
+			string expectedElement = CollectibleSymbols.GetElementName(collectibleData.isPearl, collectibleData.collected);
 			if (symbolSprite.element.name != expectedElement) {
 				symbolSprite.element = Futile.atlasManager.GetElementWithName(expectedElement);
 			}
