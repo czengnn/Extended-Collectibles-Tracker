@@ -41,42 +41,54 @@ namespace ExtendedCollectiblesTracker {
         static void Map_ctor_HK(On.HUD.Map.orig_ctor orig, HUD.Map self, HUD.HUD hud, HUD.Map.MapData mapData) {
 			//MapExtensions.Pre_ctor(self, hud, mapData);
 			orig(self, hud, mapData);
-			MapExtensions.Post_ctor(self, hud, mapData);
+			RunSafely(() => MapExtensions.Post_ctor(self, hud, mapData));
 		}
 
 		static void MapData_ctor_HK(On.HUD.Map.MapData.orig_ctor_World_RainWorld orig, HUD.Map.MapData self, World initWorld, RainWorld rainWorld) {
 			orig(self, initWorld, rainWorld);
-			MapDataExtensions.ctor(self, initWorld, rainWorld);
+			RunSafely(() => MapDataExtensions.ctor(self, initWorld, rainWorld));
 		}
 
 		static void FastTravelScreen_FinalizeRegionSwitch_HK(On.Menu.FastTravelScreen.orig_FinalizeRegionSwitch orig, FastTravelScreen self, int newRegion) {
 			orig(self, newRegion);
-			FastTravelScreenExtensions.FinalizeRegionSwitch(self, newRegion);
+			RunSafely(() => FastTravelScreenExtensions.FinalizeRegionSwitch(self, newRegion));
 		}
 
 		static void CollectiblesTracker_ctor_HK(On.MoreSlugcats.CollectiblesTracker.orig_ctor orig, MoreSlugcats.CollectiblesTracker self, Menu.Menu menu, MenuObject owner, Vector2 pos, FContainer container, SlugcatStats.Name saveSlot) {
 			orig(self, menu, owner, pos, container, saveSlot);
-			CollectiblesTrackerExtension.ctor(self, menu, owner, pos, container, saveSlot);
+			RunSafely(() => CollectiblesTrackerExtension.ctor(self, menu, owner, pos, container, saveSlot));
 		}
 
 		static void CollectiblesTracker_Update_HK(On.MoreSlugcats.CollectiblesTracker.orig_Update orig, MoreSlugcats.CollectiblesTracker self) {
 			orig(self);
-			CollectiblesTrackerExtension.Update(self);
+			RunSafely(() => CollectiblesTrackerExtension.Update(self));
 		}
 
 		static void CollectiblesTracker_GrafUpdate_HK(On.MoreSlugcats.CollectiblesTracker.orig_GrafUpdate orig, MoreSlugcats.CollectiblesTracker self, float timeStacker) {
 			orig(self, timeStacker);
-			CollectiblesTrackerExtension.GrafUpdate(self, timeStacker);
+			RunSafely(() => CollectiblesTrackerExtension.GrafUpdate(self, timeStacker));
 		}
 
 		static void SaveState_LoadGame_HK(On.SaveState.orig_LoadGame orig, SaveState self, string str, RainWorldGame game) {
 			orig(self, str, game);
-			CollectiblesTrackerExtension.presavePendingObjects = new List<string>(self.pendingObjects);
+			RunSafely(() => CollectiblesTrackerExtension.presavePendingObjects = new List<string>(self.pendingObjects ?? new List<string>()));
 		}
 
 		static void RegionState_AdaptRegionStateToWorld_HK(On.RegionState.orig_AdaptRegionStateToWorld orig, RegionState self, int playerShelter, int activeGate) {
 			orig(self, playerShelter, activeGate);
-			CollectiblesTrackerExtension.presavePendingObjects = new List<string>(self.saveState.pendingObjects);
+			RunSafely(() => CollectiblesTrackerExtension.presavePendingObjects = new List<string>(self.saveState?.pendingObjects ?? new List<string>()));
+		}
+
+		// Extension code runs after the vanilla behavior (orig) already completed, so any exception
+		// here must never be allowed to bubble up into the game's hook chain: since the vanilla
+		// screen/menu construction already finished, an uncaught exception at this point only ever
+		// breaks our own overlay (map markers, tracker icons) instead of leaving the game soft-locked.
+		static void RunSafely(Action action) {
+			try {
+				action();
+			} catch (Exception e) {
+				Logger.LogError($"[ExtendedCollectiblesTracker] Unhandled exception in extension code: {e}");
+			}
 		}
 
 		//
