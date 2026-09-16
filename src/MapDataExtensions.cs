@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -22,6 +23,10 @@ namespace ExtendedCollectiblesTracker {
 				public bool collected;
 				public bool isPearl;
 				public bool isRelocated;
+				// tokens have no live position to relocate, but their collected state can still
+				// change while the map is open; pearls are refreshed separately by LocatePearls,
+				// so this stays null for them.
+				public Func<bool> refreshCollected;
 			}
 			public List<CollectibleData> collectibleData = new();
 		}
@@ -89,7 +94,8 @@ namespace ExtendedCollectiblesTracker {
 							room = roomIndex,
 							pos = placedObject.pos,
 							color = tokenData.isBlue ? RainWorld.AntiGold.rgb : RainWorld.GoldRGB,
-							collected = miscProgressionData.GetTokenCollected(tokenData.tokenString, tokenData.isBlue)
+							collected = miscProgressionData.GetTokenCollected(tokenData.tokenString, tokenData.isBlue),
+							refreshCollected = () => miscProgressionData.GetTokenCollected(tokenData.tokenString, tokenData.isBlue)
 						});
 					} else if (placedObject.type == MoreSlugcatsEnums.PlacedObjectType.RedToken) {
 						CollectToken.CollectTokenData tokenData = (CollectToken.CollectTokenData)placedObject.data;
@@ -101,7 +107,8 @@ namespace ExtendedCollectiblesTracker {
 							room = roomIndex,
 							pos = placedObject.pos,
 							color = CollectToken.RedColor.rgb,
-							collected = miscProgressionData.GetTokenCollected(new MultiplayerUnlocks.SafariUnlockID(tokenData.tokenString, false))
+							collected = miscProgressionData.GetTokenCollected(new MultiplayerUnlocks.SafariUnlockID(tokenData.tokenString, false)),
+							refreshCollected = () => miscProgressionData.GetTokenCollected(new MultiplayerUnlocks.SafariUnlockID(tokenData.tokenString, false))
 						});
 					} else if (placedObject.type == PlacedObject.Type.GreenToken) {
 						CollectToken.CollectTokenData tokenData = (CollectToken.CollectTokenData)placedObject.data;
@@ -113,7 +120,8 @@ namespace ExtendedCollectiblesTracker {
 							room = roomIndex,
 							pos = placedObject.pos,
 							color = CollectToken.GreenColor.rgb,
-							collected = miscProgressionData.GetTokenCollected(new MultiplayerUnlocks.SlugcatUnlockID(tokenData.tokenString, false))
+							collected = miscProgressionData.GetTokenCollected(new MultiplayerUnlocks.SlugcatUnlockID(tokenData.tokenString, false)),
+							refreshCollected = () => miscProgressionData.GetTokenCollected(new MultiplayerUnlocks.SlugcatUnlockID(tokenData.tokenString, false))
 						});
 					} else if (placedObject.type == MoreSlugcatsEnums.PlacedObjectType.WhiteToken) {
 						if (rainWorld.progression.PlayingAsSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Spear) {
@@ -123,19 +131,23 @@ namespace ExtendedCollectiblesTracker {
 
 							if (ChatlogData.HasUnique(tokenData.ChatlogCollect)) {
 								extendedSelf.collectibleData.Add(new Extension.CollectibleData() {
-									
+
 									order = 2,
 									room = roomIndex,
 									pos = placedObject.pos,
 									color = CollectToken.WhiteColor.rgb,
-									collected = miscProgressionData.GetBroadcastListened(tokenData.ChatlogCollect)
+									collected = miscProgressionData.GetBroadcastListened(tokenData.ChatlogCollect),
+									refreshCollected = () => miscProgressionData.GetBroadcastListened(tokenData.ChatlogCollect)
 								});
 							} else {
-								bool collected = false;
-								if (saveState != null) {
-									collected = saveState.miscWorldSaveData.SSaiConversationsHad == 0 ?
-										saveState.deathPersistentSaveData.prePebChatlogsRead.Contains(tokenData.ChatlogCollect) :
-										saveState.deathPersistentSaveData.chatlogsRead.Contains(tokenData.ChatlogCollect);
+								bool ChatlogRead() {
+									SaveState currentSaveState = rainWorld.progression.currentSaveState;
+									if (currentSaveState == null) {
+										return false;
+									}
+									return currentSaveState.miscWorldSaveData.SSaiConversationsHad == 0 ?
+										currentSaveState.deathPersistentSaveData.prePebChatlogsRead.Contains(tokenData.ChatlogCollect) :
+										currentSaveState.deathPersistentSaveData.chatlogsRead.Contains(tokenData.ChatlogCollect);
 								}
 
 								extendedSelf.collectibleData.Add(new Extension.CollectibleData() {
@@ -143,7 +155,8 @@ namespace ExtendedCollectiblesTracker {
 									room = roomIndex,
 									pos = placedObject.pos,
 									color = Color.white,
-									collected = collected
+									collected = ChatlogRead(),
+									refreshCollected = ChatlogRead
 								});
 							}
 						}
@@ -243,6 +256,16 @@ namespace ExtendedCollectiblesTracker {
 							isRelocated = true,
 						});
 					}
+				}
+			}
+		}
+
+		public static void RefreshTokens(this Map.MapData self) {
+			Extension extendedSelf = self.GetExtension();
+
+			foreach (Extension.CollectibleData collectibleData in extendedSelf.collectibleData) {
+				if (collectibleData.refreshCollected != null) {
+					collectibleData.collected = collectibleData.refreshCollected();
 				}
 			}
 		}
