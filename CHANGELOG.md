@@ -3,6 +3,15 @@
 All notable changes to this mod are documented here. Versions correspond to the
 `version` field in `mod/modinfo.json` and `Plugin.VERSION`.
 
+## [1.0.7]
+### Fixed
+- Fixed token markers (arena/safari/master/broadcast diamonds) not filling in
+  as soon as they're collected — the collected state was only computed once
+  when the map was first built, so it stayed stale until the map itself got
+  rebuilt (e.g. on hibernation). Tokens now refresh on the same periodic tick
+  as pearl locations, so a token's dot fills in shortly after picking it up
+  without needing to hibernate or reopen the map first.
+
 ## [1.0.6]
 ### Fixed
 - Fixed an intermittent freeze on the hibernation/sleep screen: a saved or

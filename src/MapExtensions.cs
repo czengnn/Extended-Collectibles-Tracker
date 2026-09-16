@@ -15,7 +15,7 @@ namespace ExtendedCollectiblesTracker {
 			public int counter;
 		}
 
-		const int LocatePearlsRefreshInterval = 40;
+		const int CollectibleRefreshInterval = 40;
 
 		static ConditionalWeakTable<Map, Extension> extensions = new();
 
@@ -41,11 +41,13 @@ namespace ExtendedCollectiblesTracker {
 			Extension extendedSelf = self.GetExtension();
 			extendedSelf.counter++;
 
-			// re-resolve pearl locations periodically so markers follow pearls that get
-			// carried to a shelter (or otherwise relocated) after the map was built,
-			// instead of staying stuck at their original room forever
-			if (MapRefresh.ShouldRefresh(extendedSelf.counter, LocatePearlsRefreshInterval)) {
+			// re-resolve pearl locations and token/broadcast collected state periodically so
+			// markers follow pearls relocated after the map was built (e.g. carried to a
+			// shelter) and fill in as soon as a token is collected, instead of only updating
+			// the next time the map itself gets rebuilt (e.g. on hibernation)
+			if (MapRefresh.ShouldRefresh(extendedSelf.counter, CollectibleRefreshInterval)) {
 				self.mapData.LocatePearls(self.hud.rainWorld);
+				self.mapData.RefreshTokens();
 			}
 		}
 	}

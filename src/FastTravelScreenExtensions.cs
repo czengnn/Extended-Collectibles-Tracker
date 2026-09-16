@@ -9,6 +9,7 @@ namespace ExtendedCollectiblesTracker {
 	class FastTravelScreenExtensions {
 		public static void FinalizeRegionSwitch(FastTravelScreen self, int newRegion) {
 			self.mapData.LocatePearls(self.manager.rainWorld);
+			self.mapData.RefreshTokens();
 
 			Vector2 screenSize = self.manager.rainWorld.options.ScreenSize;
 			Vector2 screenMiddle = screenSize / 2f;
