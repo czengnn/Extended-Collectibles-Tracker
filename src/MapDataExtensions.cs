@@ -214,10 +214,12 @@ namespace ExtendedCollectiblesTracker {
 				if (trackedObject.lastSeenRegion != self.regionName)
 					continue;
 
-				if (trackedObject.obj == null)
-					trackedObject.obj = SaveState.AbstractPhysicalObjectFromString(null, trackedObject.objRepresentation);
-				
-				if (trackedObject.obj is DataPearl.AbstractDataPearl abstractDataPearl) {
+				// Never store this back: we parse with a null world, and HUD.Map's constructor
+				// throws reading .Room on it, which hangs the sleep/death screen.
+				AbstractPhysicalObject trackedPhysicalObject = trackedObject.obj
+					?? SaveState.AbstractPhysicalObjectFromString(null, trackedObject.objRepresentation);
+
+				if (trackedPhysicalObject is DataPearl.AbstractDataPearl abstractDataPearl) {
 					var pearlType = abstractDataPearl.dataPearlType;
 					if (!DataPearl.PearlIsNotMisc(pearlType))
 						continue;

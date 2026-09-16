@@ -3,6 +3,16 @@
 All notable changes to this mod are documented here. Versions correspond to the
 `version` field in `mod/modinfo.json` and `Plugin.VERSION`.
 
+## [1.0.7]
+### Fixed
+- Fixed the hibernation and death screens hanging indefinitely, with the
+  slugcat animation still playing and no button responding. Pearl location
+  lookup stored an object parsed with a null world back into the save state's
+  object trackers, so the game's own map constructor threw a
+  `NullReferenceException` reading that object's room. The exception is
+  swallowed and the constructor retried every frame, which left the screen
+  stuck while CPU and memory usage climbed, with nothing written to any log.
+
 ## [1.0.6]
 ### Fixed
 - Fixed an intermittent freeze on the hibernation/sleep screen: a saved or
