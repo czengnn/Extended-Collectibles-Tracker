@@ -214,10 +214,16 @@ namespace ExtendedCollectiblesTracker {
 				if (trackedObject.lastSeenRegion != self.regionName)
 					continue;
 
-				if (trackedObject.obj == null)
-					trackedObject.obj = SaveState.AbstractPhysicalObjectFromString(null, trackedObject.objRepresentation);
-				
-				if (trackedObject.obj is DataPearl.AbstractDataPearl abstractDataPearl) {
+				// Only ever read this tracker: assigning the parsed object back into
+				// trackedObject.obj stores an entity whose world is null (parsed with a null
+				// world here, since we only want its pearl type), and vanilla's HUD.Map
+				// constructor later reads .Room on it -> world.GetAbstractRoom() throws a
+				// NullReferenceException. The Map constructor is retried every frame, so the
+				// sleep/death screen hangs with its animation still playing and input dead.
+				AbstractPhysicalObject trackedPhysicalObject = trackedObject.obj
+					?? SaveState.AbstractPhysicalObjectFromString(null, trackedObject.objRepresentation);
+
+				if (trackedPhysicalObject is DataPearl.AbstractDataPearl abstractDataPearl) {
 					var pearlType = abstractDataPearl.dataPearlType;
 					if (!DataPearl.PearlIsNotMisc(pearlType))
 						continue;
