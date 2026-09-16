@@ -1,6 +1,21 @@
-# Extended Collectibles Tracker
+# Extended Collectibles Tracker (iotrip fix)
 
 Where the remaining stuff at?
+
+A fork of [FranklyGD's Extended Collectibles Tracker](https://steamcommunity.com/sharedfiles/filedetails/?id=3244633122)
+that fixes bugs in the original. It installs under its own mod id, so it sits
+alongside the original rather than replacing it — enable only one.
+
+### What this fork fixes
+
+- **Hibernation and death screens no longer freeze.** Two separate causes: save
+  data that failed to parse while the collectibles tracker was being built, and
+  a pearl lookup that stored an object the game then crashed on every frame.
+- **Pearl markers follow the pearl.** They now track a pearl carried to a
+  shelter instead of pointing at where it was first found, and switch to their
+  "read" look as soon as it's deciphered.
+- **Token markers fill in when collected**, rather than only after the map is
+  rebuilt on the next hibernation.
 
 ---
 

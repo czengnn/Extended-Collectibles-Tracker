@@ -12,9 +12,11 @@ using BepInEx;
 namespace ExtendedCollectiblesTracker {
 	[BepInPlugin(GUID, MOD_NAME, VERSION)]
 	public class Plugin : BaseUnityPlugin {
-		public const string VERSION = "1.0.7";
-		public const string MOD_NAME = "Extended Collectibles Tracker";
-		public const string MOD_ID = "extendedcollectiblestracker";
+		public const string VERSION = "1.0.6";
+		public const string MOD_NAME = "Extended Collectibles Tracker (iotrip fix)";
+		// Must stay identical to the "id" in mod/modinfo.json: Remix looks the options
+		// page up by this GUID, and a mismatch means the mod shows no settings.
+		public const string MOD_ID = "extendedcollectiblestracker.iotripfix";
 		public const string AUTHOR = "franklygd";
 		public const string GUID = AUTHOR + "." + MOD_ID;
 
