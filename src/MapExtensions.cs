@@ -34,6 +34,10 @@ namespace ExtendedCollectiblesTracker {
 				self.mapObjects.Add(new CollectibleMarker(self, collectibleData));
 			}
 
+			foreach (var roomName in extendedMapData.roomNames) {
+				self.mapObjects.Add(new RoomNameMarker(self, roomName.Key, roomName.Value));
+			}
+
 			self.ResetNotRevealedMarkers();
 		}
 

@@ -13,6 +13,7 @@ namespace ExtendedCollectiblesTracker {
 	static class MapDataExtensions {
 		public class Extension {
 			public int region;
+			public Dictionary<int, string> roomNames = new();
 			public Dictionary<DataPearl.AbstractDataPearl.DataPearlType, int> locatedPearls = new();
 			public class CollectibleData {
 				public int order;
@@ -60,6 +61,7 @@ namespace ExtendedCollectiblesTracker {
 			// per room
 			foreach (var roomIndex in self.roomIndices) {
 				AbstractRoom abstractRoom = initWorld.GetAbstractRoom(roomIndex);
+				extendedSelf.roomNames[roomIndex] = abstractRoom.name;
 
 				RoomSettings roomSettings = new RoomSettings(abstractRoom.name, initWorld.region, false, false, game?.TimelinePoint, game);
 
