@@ -123,7 +123,12 @@ namespace ExtendedCollectiblesTracker {
 					// Filled once an iterator has read it, half filled while it is in the shelter
 					// with you and still unread, empty otherwise. Read wins: there is nothing left
 					// to do with that pearl wherever it happens to be lying.
-					string element = pearlRead ? "dpOn"
+					//
+					// dpFull rather than vanilla's dpOn: dpOn's fill is a small disc with a gap
+					// around it, so at 11 pixels it isn't clear whether a dot is part filled or
+					// just drawn that way. These fill up to the outline, which makes any gap left
+					// inside the circle mean something.
+					string element = pearlRead ? "dpFull"
 						: withUniquePearls.Contains(pearlType) ? "dpHalf"
 						: "dpOff";
 
