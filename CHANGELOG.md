@@ -7,6 +7,13 @@ test run if any of them, or the newest heading below, falls out of step.
 
 ## [1.0.10]
 ### Fixed
+- Fixed a pearl held in your hands as you slept not pulsing on the sleep screen.
+  Swallowed pearls and pearls left on the shelter floor were both found, but the
+  save keeps what you were holding in `playerGrasps`, apart from the shelter's
+  contents, and nothing looked there. Note that a pearl whose type has been lost
+  — another mod storing and returning it can reduce it to `Misc` — has no dot on
+  that row to pulse in the first place, and nothing can recover which pearl it
+  was.
 - Fixed Instant Map taking a moment to arrive the first time it was opened in a
   region. The map's own setup runs `RevealAllDiscovered()` and then
   `InitiateMapView()`, and on a map that has never been opened the second of

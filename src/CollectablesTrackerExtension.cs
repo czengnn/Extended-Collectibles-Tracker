@@ -50,6 +50,25 @@ namespace ExtendedCollectiblesTracker {
 						}
 					}
 
+					// A pearl in your hands is in the shelter with you as much as a swallowed one is,
+					// but the save keeps what you were holding in its own list rather than with the
+					// shelter's contents, so nothing below would have found it.
+					if (saveState.playerGrasps != null) {
+						foreach (string heldItem in saveState.playerGrasps) {
+							if (string.IsNullOrEmpty(heldItem) || heldItem == "0") {
+								continue;
+							}
+
+							AbstractPhysicalObject abstractPhysicalObject = SaveState.AbstractPhysicalObjectFromString(null, heldItem);
+
+							if (abstractPhysicalObject is DataPearl.AbstractDataPearl heldPearl) {
+								if (DataPearl.PearlIsNotMisc(heldPearl.dataPearlType)) {
+									withUniquePearls.Add(heldPearl.dataPearlType);
+								}
+							}
+						}
+					}
+
 					string denRoomName = saveState.GetSaveStateDenToUse();
 
 					RegionState regionState = saveState.regionStates.FirstOrDefault(x => string.Equals(x?.regionName, self.collectionData.currentRegion, System.StringComparison.InvariantCultureIgnoreCase));
