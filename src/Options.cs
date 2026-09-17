@@ -14,7 +14,7 @@ namespace ExtendedCollectiblesTracker {
 			tags: "Show Map Markers"));
 
 		public static Configurable<bool> showRoomNames = instance.config.Bind("showRoomNames", false, new ConfigurableInfo(
-			"Show each room's name on the map, over rooms that have been explored.",
+			"Show each room's name on the map, just above every room the map is showing.",
 			tags: "Show Room Names"));
 
 		public static Configurable<bool> instantMap = instance.config.Bind("instantMap", false, new ConfigurableInfo(

@@ -32,6 +32,11 @@ alongside the original rather than replacing it — enable only one.
 - Hibernation and death screens freezing, with the slugcat animation still playing and no
   button responding — two separate causes, both since fixed.
 - Pearl and token markers going stale until the map was rebuilt on the next hibernation.
+- A pearl collecting a duplicate marker a few times a second, until the pile of them froze
+  the map and the rest of the game with it.
+- Markers for pearls that have no type, pointing at pearls that aren't there — a pearl can
+  come back from a save string without one, and then it can't be identified at all.
+- A carried pearl's marker sitting where the pearl was rather than where it is.
 
 See [CHANGELOG.md](CHANGELOG.md) for the full list.
 
