@@ -5,6 +5,19 @@ All notable changes to this mod are documented here. Versions correspond to the
 `Plugin.VERSION` and `<Version>` in the csproj; `VersionConsistencyTests` fails the
 test run if any of them, or the newest heading below, falls out of step.
 
+## [1.0.10]
+### Fixed
+- Fixed Instant Map taking a moment to arrive the first time it was opened in a
+  region. The map's own setup runs `RevealAllDiscovered()` and then
+  `InitiateMapView()`, and on a map that has never been opened the second of
+  those calls `ResetReveal()`, which wipes the reveal texture the first had just
+  filled in — so the map had to reveal itself outwards from the slugcat after
+  all. Both are now called in the opposite order, on the frame the map opens.
+- Instant Map now shows on the frame the button goes down rather than two frames
+  later, and goes away on the frame it comes up. `fade` was being set after the
+  vanilla update, which had already copied it into `lastFade` and decided
+  `visible = fade > 0f && lastFade > 0f` for that frame; it is now set before.
+
 ## [1.0.9]
 ### Fixed
 - Fixed the screen appearing to freeze while the map is open, while the game
