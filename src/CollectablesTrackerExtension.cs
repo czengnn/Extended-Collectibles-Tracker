@@ -10,21 +10,10 @@ using UnityEngine;
 namespace ExtendedCollectiblesTracker {
 	static class CollectiblesTrackerExtension {
 		public static List<string> presavePendingObjects = new List<string>();
-		public class Extension {
-			public int counter;
-			public Dictionary<string, List<int>> inProgress = new();
-		}
-
-		static ConditionalWeakTable<CollectiblesTracker, Extension> extensions = new();
-
-		public static Extension GetExtension(this CollectiblesTracker self) {
-			return extensions.GetOrCreateValue(self);
-		}
 
 		public static void ctor(CollectiblesTracker self, Menu.Menu menu, MenuObject owner, Vector2 pos, FContainer container, SlugcatStats.Name saveSlot) {
 			RainWorld rainWorld = menu.manager.rainWorld;
 			PlayerProgression.MiscProgressionData miscProgressionData = rainWorld.progression.miscProgressionData;
-			Extension extendedSelf = self.GetExtension();
 
 			// get pearls with you
 			List<DataPearl.AbstractDataPearl.DataPearlType> withUniquePearls = new();
@@ -129,23 +118,19 @@ namespace ExtendedCollectiblesTracker {
 				foreach (var pearlData in regionPlacedPearls.Value) {
 					DataPearl.AbstractDataPearl.DataPearlType pearlType = pearlData;
 
-					if (withUniquePearls.Contains(pearlType)) {
-						int spriteIndex = self.sprites[regionName].Count;
-						if (!extendedSelf.inProgress.TryGetValue(regionName, out List<int> inProgress))
-						{
-							inProgress = new();
-							extendedSelf.inProgress[regionName] = inProgress;
-						}
-
-						inProgress.Add(spriteIndex);
-					}
-
 					bool pearlRead = Mod.IsPearlRead(rainWorld, pearlType);
+
+					// Filled once an iterator has read it, half filled while it is in the shelter
+					// with you and still unread, empty otherwise. Read wins: there is nothing left
+					// to do with that pearl wherever it happens to be lying.
+					string element = pearlRead ? "dpOn"
+						: withUniquePearls.Contains(pearlType) ? "dpHalf"
+						: "dpOff";
 
 					Color color = Mod.GetPearlIconColor(pearlType);
 					self.spriteColors[regionName].Add(color);
 
-					FSprite sprite = new(pearlRead ? "dpOn" : "dpOff")
+					FSprite sprite = new(element)
 					{
 						color = color
 					};
@@ -156,35 +141,5 @@ namespace ExtendedCollectiblesTracker {
 			}
 		}
 
-		public static void Update(CollectiblesTracker self) {
-			Extension extendedSelf = self.GetExtension();
-			extendedSelf.counter ++;
-		}
-
-		public static void GrafUpdate(CollectiblesTracker self, float timeStacker) {
-			Extension extendedSelf = self.GetExtension();
-
-			// Pulsing towards white only shows on a dark pearl. SL_moon's dot is (0.9, 0.95, 0.2)
-			// before it is brightened further, so lerping it towards white moves red and green
-			// almost nowhere and the dot sits there looking like every other one, while SI_top at
-			// (0.01, 0.01, 0.01) swings the whole way. Oscillating either side of the pearl's own
-			// colour instead keeps the hue and always travels the same distance, so a pale pearl
-			// reads as clearly as a dark one.
-			float pulse = (Mathf.Sin((extendedSelf.counter + timeStacker) / 20) + 1) / 2;
-
-			try {
-				foreach (KeyValuePair<string, List<int>> inprogress in extendedSelf.inProgress) {
-					string regionName = inprogress.Key;
-					foreach (int spriteIndex in inprogress.Value) {
-						Color color = self.spriteColors[regionName][spriteIndex];
-						self.sprites[regionName][spriteIndex].color = Color.Lerp(
-							color * 0.35f,
-							Color.Lerp(color, Color.white, 0.75f),
-							pulse);
-					}
-				}
-			} catch {
-			}
-		}
 	}
 }

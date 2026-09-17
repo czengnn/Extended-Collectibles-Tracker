@@ -6,20 +6,22 @@ All notable changes to this mod are documented here. Versions correspond to the
 test run if any of them, or the newest heading below, falls out of step.
 
 ## [1.0.10]
+### Changed
+- A pearl in the shelter with you now shows as a half filled dot on the sleep
+  screen, instead of one pulsing towards white. The pulse was only legible on a
+  dark pearl: SI_top is (0.01, 0.01, 0.01) and swung the whole way, while
+  SL_moon at (0.9, 0.95, 0.2) had nowhere left to travel and sat there looking
+  like every other dot. Half filled says the same thing at a glance and reads
+  the same whatever colour the pearl is — empty, half, full, in order of how
+  much is left to do with it.
+
 ### Fixed
-- Fixed a pale pearl's sleep screen dot looking like it wasn't pulsing at all.
-  The pulse ran from the pearl's colour towards white, which is most of the way
-  for a dark pearl like SI_top at (0.01, 0.01, 0.01) and almost nowhere for a
-  bright one like SL_moon at (0.9, 0.95, 0.2) — so the dot for a pearl in the
-  shelter with you sat there looking like every other dot. It now oscillates
-  either side of the pearl's own colour, which keeps the hue and travels the
-  same distance whatever the pearl.
-- Fixed a pearl held in your hands as you slept not pulsing on the sleep screen.
-  Swallowed pearls and pearls left on the shelter floor were both found, but the
-  save keeps what you were holding in `playerGrasps`, apart from the shelter's
-  contents, and nothing looked there. Note that a pearl whose type has been lost
-  — another mod storing and returning it can reduce it to `Misc` — has no dot on
-  that row to pulse in the first place, and nothing can recover which pearl it
+- Fixed a pearl held in your hands as you slept not counting as being in the
+  shelter with you. Swallowed pearls and pearls left on the shelter floor were
+  both found, but the save keeps what you were holding in `playerGrasps`, apart
+  from the shelter's contents, and nothing looked there. Note that a pearl whose
+  type has been lost — another mod storing and returning it can reduce it to
+  `Misc` — has no dot on that row at all, and nothing can recover which pearl it
   was.
 - Fixed Instant Map taking a moment to arrive the first time it was opened in a
   region. The map's own setup runs `RevealAllDiscovered()` and then

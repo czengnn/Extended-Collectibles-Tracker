@@ -17,8 +17,8 @@ alongside the original rather than replacing it — enable only one.
     when off-screen and fades with distance, so it doubles as a rough compass.
 - **On the sleep screen** — one dot per pearl, for each region you've visited, after the
   vanilla unlock row.
-  - **Filled** — deciphered. **Empty** — not yet.
-  - **Pulsing white** — that pearl is with you in the shelter, swallowed or on the floor.
+  - **Empty** — not found, or not deciphered. **Half filled** — that pearl is in the
+    shelter with you, swallowed, held or on the floor. **Filled** — deciphered.
 - **On the fast travel screen** — the region's token and pearl progress at a glance.
 - **Room names** — optional labels above each room the map is showing, so you can tell
   where you are without counting shapes.

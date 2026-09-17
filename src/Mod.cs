@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using BepInEx.Logging;
 using Menu;
@@ -34,8 +34,6 @@ namespace ExtendedCollectiblesTracker {
 			On.Menu.FastTravelScreen.FinalizeRegionSwitch += FastTravelScreen_FinalizeRegionSwitch_HK;
 
 			On.MoreSlugcats.CollectiblesTracker.ctor += CollectiblesTracker_ctor_HK;
-			On.MoreSlugcats.CollectiblesTracker.Update += CollectiblesTracker_Update_HK;
-			On.MoreSlugcats.CollectiblesTracker.GrafUpdate += CollectiblesTracker_GrafUpdate_HK;
 
 			On.SaveState.LoadGame += SaveState_LoadGame_HK;
 			On.RegionState.AdaptRegionStateToWorld += RegionState_AdaptRegionStateToWorld_HK;
@@ -82,16 +80,6 @@ namespace ExtendedCollectiblesTracker {
 		static void CollectiblesTracker_ctor_HK(On.MoreSlugcats.CollectiblesTracker.orig_ctor orig, MoreSlugcats.CollectiblesTracker self, Menu.Menu menu, MenuObject owner, Vector2 pos, FContainer container, SlugcatStats.Name saveSlot) {
 			orig(self, menu, owner, pos, container, saveSlot);
 			RunSafely(() => CollectiblesTrackerExtension.ctor(self, menu, owner, pos, container, saveSlot));
-		}
-
-		static void CollectiblesTracker_Update_HK(On.MoreSlugcats.CollectiblesTracker.orig_Update orig, MoreSlugcats.CollectiblesTracker self) {
-			orig(self);
-			RunSafely(() => CollectiblesTrackerExtension.Update(self));
-		}
-
-		static void CollectiblesTracker_GrafUpdate_HK(On.MoreSlugcats.CollectiblesTracker.orig_GrafUpdate orig, MoreSlugcats.CollectiblesTracker self, float timeStacker) {
-			orig(self, timeStacker);
-			RunSafely(() => CollectiblesTrackerExtension.GrafUpdate(self, timeStacker));
 		}
 
 		static void SaveState_LoadGame_HK(On.SaveState.orig_LoadGame orig, SaveState self, string str, RainWorldGame game) {
