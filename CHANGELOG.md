@@ -3,6 +3,33 @@
 All notable changes to this mod are documented here. Versions correspond to the
 `version` field in `mod/modinfo.json` and `Plugin.VERSION`.
 
+## [1.0.8]
+### Fixed
+- Fixed a pearl picking up a duplicate map marker every time its location was
+  refreshed, so a single pearl could end up marked both where it was found and
+  where it currently is, along with any number of copies stacked on top. The
+  refresh matched pearls through a lookup table that one of its two callers never
+  updated, so the pearl was never recognised again and another marker was appended
+  a few times a second for as long as the map existed. The markers now carry which
+  pearl they are, so there is nothing left to fall out of step. Sleeping cleared it
+  temporarily, because a new cycle builds the map's data from scratch.
+- Fixed the map freezing while held, and taking the rest of the game down with it,
+  which those accumulating markers caused: the game walks every marker for each
+  pixel of map it reveals.
+- Fixed markers appearing for pearls that have no type, pointing at pearls that
+  aren't there. A pearl can come back from a save string without its type — a mod
+  storing and returning it can strip it — and with no identity it can't be told
+  apart, coloured, or found again, so it is no longer tracked. Only "Misc" pearls
+  were being skipped before.
+- Fixed a carried pearl's marker sitting where the pearl was rather than where it
+  is. Saved data only records where a pearl would respawn, so while the pearl is
+  loaded in the world its actual position is used instead.
+
+### Changed
+- Room name labels now appear on every room the map is showing, rather than only
+  rooms that have been entered. Rooms get revealed by being near them, so named
+  rooms were being left blank.
+
 ## [1.0.7]
 ### Added
 - Optional room name labels on the map, off by default. Each room you've visited gets

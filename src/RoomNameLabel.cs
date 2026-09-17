@@ -19,9 +19,9 @@ namespace ExtendedCollectiblesTracker {
 		readonly Vector2 aboveRoom;
 		readonly FLabel label;
 
-		// Whether the room has been visited, so an unexplored region doesn't hand over its
+		// Whether the map is drawing this room yet, so an unexplored region doesn't hand over its
 		// layout. Refreshed periodically rather than per frame; see MapExtensions.
-		public bool visited;
+		public bool shown;
 
 		public RoomNameLabel(Map map, int room, string roomName) {
 			this.room = room;
@@ -39,7 +39,7 @@ namespace ExtendedCollectiblesTracker {
 		}
 
 		public void Draw(Map map, float timeStacker, bool show) {
-			label.isVisible = show && visited;
+			label.isVisible = show && shown;
 			if (!label.isVisible) {
 				return;
 			}
@@ -48,6 +48,43 @@ namespace ExtendedCollectiblesTracker {
 			label.x = labelPos.x;
 			label.y = labelPos.y;
 			label.alpha = Mathf.Lerp(map.lastFade, map.fade, timeStacker);
+		}
+
+		// Has the map revealed any of this room yet? The discover texture is what the map draws
+		// rooms from, so this matches what you can see rather than where you have walked. Room
+		// corners are sampled as well as the middle, since a big room is often revealed from one
+		// end long before its centre is.
+		public bool IsRoomDiscovered(Map map) {
+			Texture2D discoverTexture = map.discoverTexture;
+			if (discoverTexture == null) {
+				return false;
+			}
+
+			IntVector2 roomSize = map.mapData.SizeOfRoom(room);
+			Vector2 roomExtent = new Vector2(roomSize.x * 20f, roomSize.y * 20f);
+
+			foreach (Vector2 sample in new[] {
+				roomExtent / 2f,
+				Vector2.zero,
+				new Vector2(roomExtent.x, 0f),
+				new Vector2(0f, roomExtent.y),
+				roomExtent
+			}) {
+				IntVector2 texturePos = IntVector2.FromVector2(
+					map.OnTexturePos(sample, room, accountForLayer: true) / map.DiscoverResolution);
+
+				if (texturePos.x < 0 || texturePos.y < 0 ||
+					texturePos.x >= discoverTexture.width || texturePos.y >= discoverTexture.height
+				) {
+					continue;
+				}
+
+				if (discoverTexture.GetPixel(texturePos.x, texturePos.y).r > 0f) {
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		public void Destroy() {

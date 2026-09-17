@@ -46,7 +46,7 @@ namespace ExtendedCollectiblesTracker {
 				for (int i = 0; i < mapData.roomNames.Length; i++) {
 					extendedSelf.roomLabels.Add(new RoomNameLabel(self, mapData.roomIndices[i], mapData.roomNames[i]));
 				}
-				RefreshVisitedRooms(self);
+				RefreshShownRooms(self);
 			}
 		}
 
@@ -97,7 +97,7 @@ namespace ExtendedCollectiblesTracker {
 			if (MapRefresh.ShouldRefresh(extendedSelf.counter, CollectibleRefreshInterval)) {
 				self.mapData.LocatePearls(self.hud.rainWorld);
 				self.mapData.RefreshTokens();
-				RefreshVisitedRooms(self);
+				RefreshShownRooms(self);
 			}
 		}
 
@@ -113,37 +113,18 @@ namespace ExtendedCollectiblesTracker {
 			}
 		}
 
-		// Which rooms the player has actually been to, so an unexplored region doesn't give away
-		// its layout. This walks the save's visited list, so it runs on the periodic tick rather
-		// than every frame.
-		static void RefreshVisitedRooms(Map self) {
+		// Label a room once the map is actually drawing it, which is what the discover texture
+		// records - rooms get revealed by being near them, not only by walking in, so the save's
+		// visited list leaves named rooms blank. Sampling a texture is too slow for every frame,
+		// so this rides the periodic tick and each label keeps its answer in between.
+		static void RefreshShownRooms(Map self) {
 			Extension extendedSelf = self.GetExtension();
-			if (extendedSelf.roomLabels.Count == 0) {
+			if (extendedSelf.roomLabels.Count == 0 || self.discoverTexture == null) {
 				return;
 			}
 
-			SaveState saveState = self.GetSaveState();
-			if (saveState?.regionStates == null) {
-				return;
-			}
-
-			List<string> roomsVisited = null;
-			foreach (RegionState regionState in saveState.regionStates) {
-				if (regionState != null &&
-					string.Equals(regionState.regionName, self.mapData.regionName, StringComparison.InvariantCultureIgnoreCase)
-				) {
-					roomsVisited = regionState.roomsVisited;
-					break;
-				}
-			}
-
-			if (roomsVisited == null) {
-				return;
-			}
-
-			HashSet<string> visited = new HashSet<string>(roomsVisited);
 			foreach (var roomLabel in extendedSelf.roomLabels) {
-				roomLabel.visited = visited.Contains(roomLabel.roomName);
+				roomLabel.shown = roomLabel.IsRoomDiscovered(self);
 			}
 		}
 	}
