@@ -6,14 +6,26 @@ All notable changes to this mod are documented here. Versions correspond to the
 test run if any of them, or the newest heading below, falls out of step.
 
 ## [1.0.10]
+### Added
+- Optional collectibles panel on the map, off by default: the sleep screen's
+  grid, drawn in the top right while you hold the map and fading with it. Toggle
+  it with "Collectibles On Map" in the Remix options. Vanilla's own tracker can't
+  be reused for this — it's a `PositionedMenuObject` that needs a `Menu`, and
+  there isn't one in a running game — but the data behind it is all public, and
+  in a running game what you're carrying is simply your hands and your stomach
+  rather than something to infer from a save, so a pearl's ring appears as soon
+  as you pick it up.
+
 ### Changed
-- A pearl in the shelter with you now shows as a half filled dot on the sleep
-  screen, instead of one pulsing towards white. The pulse was only legible on a
-  dark pearl: SI_top is (0.01, 0.01, 0.01) and swung the whole way, while
-  SL_moon at (0.9, 0.95, 0.2) had nowhere left to travel and sat there looking
-  like every other dot. Half filled says the same thing at a glance and reads
-  the same whatever colour the pearl is — empty, half, full, in order of how
-  much is left to do with it.
+- A pearl that's with you is now marked with a ring around its dot, on the sleep
+  screen and the new panel alike, instead of pulsing towards white. The pulse was
+  only legible on a dark pearl: SI_top is (0.01, 0.01, 0.01) and swung the whole
+  way, while SL_moon at (0.9, 0.95, 0.2) had nowhere left to travel and sat there
+  looking like every other dot. The ring also separates two facts the old dot
+  conflated — read, and with you — so a deciphered pearl in your hands still says
+  so. That matters because a read pearl is far from useless: scavengers score one
+  at 10 and gifting one is worth `InfluenceTempLike(2f)`, and it still counts
+  towards passage progress.
 
 ### Fixed
 - Fixed a pearl held in your hands as you slept not counting as being in the

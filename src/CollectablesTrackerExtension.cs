@@ -7,6 +7,8 @@ using MoreSlugcats;
 
 using UnityEngine;
 
+using ExtendedCollectiblesTracker.Core;
+
 namespace ExtendedCollectiblesTracker {
 	static class CollectiblesTrackerExtension {
 		public static List<string> presavePendingObjects = new List<string>();
@@ -120,17 +122,10 @@ namespace ExtendedCollectiblesTracker {
 
 					bool pearlRead = Mod.IsPearlRead(rainWorld, pearlType);
 
-					// Filled once an iterator has read it, half filled while it is in the shelter
-					// with you and still unread, empty otherwise. Read wins: there is nothing left
-					// to do with that pearl wherever it happens to be lying.
-					//
-					// dpFull rather than vanilla's dpOn: dpOn's fill is a small disc with a gap
-					// around it, so at 11 pixels it isn't clear whether a dot is part filled or
-					// just drawn that way. These fill up to the outline, which makes any gap left
-					// inside the circle mean something.
-					string element = pearlRead ? "dpFull"
-						: withUniquePearls.Contains(pearlType) ? "dpHalf"
-						: "dpOff";
+					// Filled once an iterator has read it, ringed while it is in the shelter with
+					// you - two separate facts, drawn separately, because a read pearl is still
+					// worth carrying and "read" shouldn't hide that you have it. See PearlSymbols.
+					string element = PearlSymbols.GetElementName(pearlRead, withUniquePearls.Contains(pearlType));
 
 					Color color = Mod.GetPearlIconColor(pearlType);
 					self.spriteColors[regionName].Add(color);

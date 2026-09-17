@@ -14,6 +14,7 @@ namespace ExtendedCollectiblesTracker {
 		public class Extension {
 			public List<CollectibleMarker> tokenMarkers = new();
 			public List<RoomNameLabel> roomLabels = new();
+			public CollectiblesPanel collectiblesPanel;
 			public int counter;
 			public bool mapWasOpen;
 		}
@@ -47,6 +48,13 @@ namespace ExtendedCollectiblesTracker {
 					extendedSelf.roomLabels.Add(new RoomNameLabel(self, mapData.roomIndices[i], mapData.roomNames[i]));
 				}
 				RefreshShownRooms(self);
+			}
+
+			// Only for the map you hold while playing: the fast travel screen has its own summary
+			// of the region it is showing, and a grid of every region over it would say nothing
+			// about where you are about to travel to.
+			if (Options.showCollectiblesOnMap.Value && hud.owner.GetOwnerType() == HUD.HUD.OwnerType.Player) {
+				self.GetExtension().collectiblesPanel = new CollectiblesPanel(self);
 			}
 		}
 
@@ -133,10 +141,19 @@ namespace ExtendedCollectiblesTracker {
 				self.mapData.RefreshTokens();
 				RefreshShownRooms(self);
 			}
+
+			// Every tick rather than on the interval above: picking a pearl up should light its
+			// dot straight away, and the panel only looks at your hands, your stomach and progress
+			// flags to answer that.
+			extendedSelf.collectiblesPanel?.Refresh(self);
 		}
 
 		public static void Draw(Map self, float timeStacker) {
 			Extension extendedSelf = self.GetExtension();
+
+			extendedSelf.collectiblesPanel?.Draw(self, timeStacker,
+				Options.showCollectiblesOnMap.Value && self.visible && !self.hud.HideGeneralHud);
+
 			if (extendedSelf.roomLabels.Count == 0) {
 				return;
 			}

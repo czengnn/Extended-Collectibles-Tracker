@@ -17,15 +17,20 @@ alongside the original rather than replacing it — enable only one.
     when off-screen and fades with distance, so it doubles as a rough compass.
 - **On the sleep screen** — one dot per pearl, for each region you've visited, after the
   vanilla unlock row.
-  - **Empty** — not found, or not deciphered. **Half filled** — that pearl is in the
-    shelter with you, swallowed, held or on the floor. **Filled** — deciphered.
+  - **Filled** — deciphered. **Empty** — not yet.
+  - **Ringed** — that pearl is with you: swallowed, held, or on the shelter floor. Shown
+    whether or not it's been read, since a read pearl is still worth carrying.
 - **On the fast travel screen** — the region's token and pearl progress at a glance.
+- **Collectibles on the map** — optional; the sleep screen's grid in the top right while
+  you hold the map, reading the same empty / filled / ringed dots. In a running game it
+  knows what's in your hands and your stomach, so a pearl's ring appears the moment you
+  pick it up.
 - **Room names** — optional labels above each room the map is showing, so you can tell
   where you are without counting shapes.
 - **Instant map** — optional; the map opens the moment you press the button, already
   showing everything you've explored, instead of a hold delay and a gradual reveal.
-- **In Remix options** — each of the four is toggled separately: **Show Map Markers**,
-  **Show Room Glow**, **Show Room Names** and **Instant Map**.
+- **In Remix options** — each of the five is toggled separately: **Show Map Markers**,
+  **Show Room Glow**, **Show Room Names**, **Collectibles On Map** and **Instant Map**.
 
 ## What this fork fixes
 

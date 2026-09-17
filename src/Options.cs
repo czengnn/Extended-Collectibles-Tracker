@@ -17,6 +17,10 @@ namespace ExtendedCollectiblesTracker {
 			"Show each room's name on the map, just above every room the map is showing.",
 			tags: "Show Room Names"));
 
+		public static Configurable<bool> showCollectiblesOnMap = instance.config.Bind("showCollectiblesOnMap", false, new ConfigurableInfo(
+			"Show the sleep screen's collectible tracker in the top right while the map is open.",
+			tags: "Collectibles On Map"));
+
 		public static Configurable<bool> instantMap = instance.config.Bind("instantMap", false, new ConfigurableInfo(
 			"Open the map instantly with everything already explored shown, instead of waiting for it to fade in and reveal itself.",
 			tags: "Instant Map"));
@@ -43,6 +47,11 @@ namespace ExtendedCollectiblesTracker {
 			position.y -= 40;
 			checkBox = new OpCheckBox(showRoomNames, position) {description = showRoomNames.info.description};
 			label = new OpLabel(position.x + 30, position.y + 3, showRoomNames.info.Tags[0] as string) {description = showRoomNames.info.description};
+			Tabs[0].AddItems(new UIelement[] { checkBox, label });
+
+			position.y -= 40;
+			checkBox = new OpCheckBox(showCollectiblesOnMap, position) {description = showCollectiblesOnMap.info.description};
+			label = new OpLabel(position.x + 30, position.y + 3, showCollectiblesOnMap.info.Tags[0] as string) {description = showCollectiblesOnMap.info.description};
 			Tabs[0].AddItems(new UIelement[] { checkBox, label });
 
 			position.y -= 40;
