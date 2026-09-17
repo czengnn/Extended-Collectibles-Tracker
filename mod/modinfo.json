@@ -1,7 +1,7 @@
 {
 	"id": "franklygd.extendedcollectiblestracker.iotripfix",
 	"name": "Extended Collectibles Tracker (iotrip fix)",
-	"version": "1.0.6",
+	"version": "1.0.7",
 	"authors": "FranklyGD, iotrip",
 	"description": "Where the remaining stuff at?",
 	"requirements": ["rwremix"],

@@ -3,6 +3,12 @@
 All notable changes to this mod are documented here. Versions correspond to the
 `version` field in `mod/modinfo.json` and `Plugin.VERSION`.
 
+## [1.0.7]
+### Added
+- Optional room name labels on the map, off by default. Each explored room gets its
+  name drawn just above its shape, fading in with the room the way collectible
+  markers already do. Toggle it with "Show Room Names" in the Remix options.
+
 ## [1.0.6]
 ### Fixed
 - Fixed the hibernation and death screens freezing, with the slugcat animation
