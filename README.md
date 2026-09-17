@@ -3,32 +3,34 @@
 Where the remaining stuff at?
 
 A fork of [FranklyGD's Extended Collectibles Tracker](https://steamcommunity.com/sharedfiles/filedetails/?id=3244633122)
-that fixes bugs in the original. It installs under its own mod id, so it sits
+with the freezes and stale markers fixed. It installs under its own mod id, so it sits
 alongside the original rather than replacing it — enable only one.
 
-### What this fork fixes
+## Features
 
-- **Hibernation and death screens no longer freeze.** Two separate causes: save
-  data that failed to parse while the collectibles tracker was being built, and
-  a pearl lookup that stored an object the game then crashed on every frame.
-- **Pearl markers follow the pearl.** They now track a pearl carried to a
-  shelter instead of pointing at where it was first found, and switch to their
-  "read" look as soon as it's deciphered.
-- **Token markers fill in when collected**, rather than only after the map is
-  rebuilt on the next hibernation.
+- **On the map** — a marker per collectible your slugcat can get: data pearls, blue and
+  gold arena tokens, red safari, green slugcat, white broadcast (Spearmaster only), each
+  in its own colour.
+  - **Empty and pulsing** while there's something left to do, **solid** once there isn't:
+    a token when collected, a pearl when an iterator deciphers it.
+  - **Unexplored rooms** get a glow instead of an exact spot. It pins to the screen edge
+    when off-screen and fades with distance, so it doubles as a rough compass.
+- **On the sleep screen** — one dot per pearl, for each region you've visited, after the
+  vanilla unlock row.
+  - **Filled** — deciphered. **Empty** — not yet.
+  - **Pulsing white** — that pearl is with you in the shelter, swallowed or on the floor.
+- **On the fast travel screen** — the region's token and pearl progress at a glance.
+- **In Remix options** — **Show Map Markers** and **Show Room Glow** toggle the two map
+  features separately.
 
----
+## What this fork fixes
 
-This mod allows you to locate any of the collectibles and display their current state of unlocked or not. Pearls are also included being tracked since their progress of being read are also persistent within the save.
+- Hibernation and death screens freezing, with the slugcat animation still playing and no
+  button responding — two separate causes, both since fixed.
+- Pearl and token markers going stale until the map was rebuilt on the next hibernation.
 
-Map shows locations of them when viewed. Exact locations if the area is explored, otherwise a faint glowing aura is shown over the room.
-
-Sleep screen also has the status of pearls appended under the unlocks for each respective column. An additional status can be interpreted here if you have pearls with you in shelter, via color pulsation.
+See [CHANGELOG.md](CHANGELOG.md) for the full list.
 
 ## Steam Workshop
 
-[![thumbnail](mod/thumbnail.png)](https://steamcommunity.com/sharedfiles/filedetails/?id=3244633122)
-
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for release notes.
+[![thumbnail](mod/thumbnail.png)](https://steamcommunity.com/sharedfiles/filedetails/?id=3802490629)
