@@ -25,6 +25,8 @@ namespace ExtendedCollectiblesTracker {
 
 			On.HUD.Map.ctor += Map_ctor_HK;
 			On.HUD.Map.Update += Map_Update_HK;
+			On.HUD.Map.Draw += Map_Draw_HK;
+			On.HUD.Map.ItemMarker.Draw += Map_ItemMarker_Draw_HK;
 			// the original constructor was replaced with `ctor_World_RainWorld` in The Watcher update
 			// due to now having an overloaded constructor
 			On.HUD.Map.MapData.ctor_World_RainWorld += MapData_ctor_HK;
@@ -48,8 +50,23 @@ namespace ExtendedCollectiblesTracker {
 		}
 
 		static void Map_Update_HK(On.HUD.Map.orig_Update orig, HUD.Map self) {
+			RunSafely(() => MapExtensions.PreUpdate(self));
 			orig(self);
+			RunSafely(() => MapExtensions.PostUpdate(self));
 			RunSafely(() => MapExtensions.Update(self));
+		}
+
+		static void Map_Draw_HK(On.HUD.Map.orig_Draw orig, HUD.Map self, float timeStacker) {
+			orig(self, timeStacker);
+			RunSafely(() => MapExtensions.Draw(self, timeStacker));
+		}
+
+		static void Map_ItemMarker_Draw_HK(On.HUD.Map.ItemMarker.orig_Draw orig, HUD.Map.ItemMarker self, float timeStacker) {
+			// Not wrapped in RunSafely: it swallows the exception after the fact, which still
+			// leaves Map.Draw abandoned halfway through. See ItemMarkerGuard.
+			if (ItemMarkerGuard.CanDraw(self)) {
+				orig(self, timeStacker);
+			}
 		}
 
 		static void MapData_ctor_HK(On.HUD.Map.MapData.orig_ctor_World_RainWorld orig, HUD.Map.MapData self, World initWorld, RainWorld rainWorld) {

@@ -13,7 +13,6 @@ namespace ExtendedCollectiblesTracker {
 	static class MapDataExtensions {
 		public class Extension {
 			public int region;
-			public Dictionary<DataPearl.AbstractDataPearl.DataPearlType, int> locatedPearls = new();
 			public class CollectibleData {
 				public int order;
 				public int room;
@@ -23,6 +22,9 @@ namespace ExtendedCollectiblesTracker {
 				public bool collected;
 				public bool isPearl;
 				public bool isRelocated;
+				// Which pearl this entry is, so a pearl found again later updates its own entry
+				// instead of being added a second time. Null for tokens.
+				public DataPearl.AbstractDataPearl.DataPearlType pearlType;
 				// tokens have no live position to relocate, but their collected state can still
 				// change while the map is open; pearls are refreshed separately by LocatePearls,
 				// so this stays null for them.
@@ -35,6 +37,20 @@ namespace ExtendedCollectiblesTracker {
 
 		public static Extension GetExtension(this Map.MapData self) {
 			return extensions.GetOrCreateValue(self);
+		}
+
+		// Saved positions are in tiles; markers are placed in the room's own coordinates.
+		static Vector2 TileToInRoomPos(WorldCoordinate pos) {
+			return new Vector2(pos.x * 20f, pos.y * 20f);
+		}
+
+		// Misc pearls aren't tracked, and neither are pearls that come back from a save string
+		// without a type: they carry no identity, so they can't be told apart, coloured, or found
+		// again, and they turn into markers pointing at a pearl that isn't there.
+		static bool IsTrackablePearl(DataPearl.AbstractDataPearl.DataPearlType pearlType) {
+			return pearlType != null
+				&& !string.IsNullOrEmpty(pearlType.value)
+				&& DataPearl.PearlIsNotMisc(pearlType);
 		}
 
 		public static void ctor(Map.MapData self, World initWorld, RainWorld rainWorld) {
@@ -69,14 +85,13 @@ namespace ExtendedCollectiblesTracker {
 
 					if (placedObject.active && placedObject.data is PlacedObject.DataPearlData pearlData) {
 						var pearlType = pearlData.pearlType;
-						if (!DataPearl.PearlIsNotMisc(pearlType))
+						if (!IsTrackablePearl(pearlType))
 							continue;
 
-						extendedSelf.locatedPearls[pearlType] = extendedSelf.collectibleData.Count;
-						
 						bool pearlRead = Mod.IsPearlRead(rainWorld, pearlType);
 
 						extendedSelf.collectibleData.Add(new Extension.CollectibleData() {
+							pearlType = pearlType,
 							room = roomIndex,
 							pos = placedObject.pos,
 							color = Mod.GetPearlIconColor(pearlType),
@@ -189,32 +204,12 @@ namespace ExtendedCollectiblesTracker {
 				
 				if (abstractPhysicalObject is DataPearl.AbstractDataPearl abstractDataPearl) {
 					var pearlType = abstractDataPearl.dataPearlType;
-					if (!DataPearl.PearlIsNotMisc(pearlType))
+					if (!IsTrackablePearl(pearlType))
 						continue;
 
-					WorldCoordinate pos = abstractPhysicalObject.pos;
-
-					if (extendedSelf.locatedPearls.TryGetValue(pearlType, out int index)) {
-						Extension.CollectibleData collectibleData = extendedSelf.collectibleData[index];
-						collectibleData.room = pos.room;
-						collectibleData.pos = new Vector2(pos.x * 20, pos.y * 20);
-						collectibleData.isRelocated = true;
-						collectibleData.collected = Mod.IsPearlRead(rainWorld, pearlType);
-					} else {
-						extendedSelf.locatedPearls[pearlType] = extendedSelf.collectibleData.Count;
-
-						bool pearlRead = Mod.IsPearlRead(rainWorld, pearlType);
-
-						extendedSelf.collectibleData.Add(new Extension.CollectibleData() {
-							room = pos.room,
-							pos = new Vector2(pos.x * 20, pos.y * 20),
-							color = Mod.GetPearlIconColor(pearlType),
-							innerColor = DataPearl.UniquePearlHighLightColor(pearlType).GetValueOrDefault(Color.white),
-							collected = pearlRead,
-							isPearl = true,
-							isRelocated = true,
-						});
-					}
+					WorldCoordinate savedPos = abstractPhysicalObject.pos;
+					RelocatePearl(extendedSelf, rainWorld, pearlType,
+						savedPos.room, TileToInRoomPos(savedPos));
 				}
 			}
 
@@ -234,32 +229,64 @@ namespace ExtendedCollectiblesTracker {
 
 				if (trackedPhysicalObject is DataPearl.AbstractDataPearl abstractDataPearl) {
 					var pearlType = abstractDataPearl.dataPearlType;
-					if (!DataPearl.PearlIsNotMisc(pearlType))
+					if (!IsTrackablePearl(pearlType))
 						continue;
 
-					WorldCoordinate pos = trackedObject.desiredSpawnLocation;
-
-					if (extendedSelf.locatedPearls.TryGetValue(pearlType, out int index)) {
-						Extension.CollectibleData collectibleData = extendedSelf.collectibleData[index];
-						collectibleData.room = pos.room;
-						collectibleData.pos = new Vector2(pos.x * 20, pos.y * 20);
-						collectibleData.isRelocated = true;
-						collectibleData.collected = Mod.IsPearlRead(rainWorld, pearlType);
+					// While the pearl is loaded in the world its body knows exactly where it is,
+					// which matters when it's being carried: the tracker only records where the
+					// pearl would respawn, so the marker would otherwise sit at a stale tile
+					// while the pearl moves around the room in your hands.
+					PhysicalObject realizedPearl = trackedObject.obj?.realizedObject;
+					if (realizedPearl?.firstChunk != null) {
+						RelocatePearl(extendedSelf, rainWorld, pearlType,
+							trackedObject.obj.pos.room, realizedPearl.firstChunk.pos);
 					} else {
-						bool pearlRead = Mod.IsPearlRead(rainWorld, pearlType);
-
-						extendedSelf.collectibleData.Add(new Extension.CollectibleData() {
-							room = pos.room,
-							pos = new Vector2(pos.x * 20, pos.y * 20),
-							color = Mod.GetPearlIconColor(pearlType),
-							innerColor = DataPearl.UniquePearlHighLightColor(pearlType).GetValueOrDefault(Color.white),
-							collected = pearlRead,
-							isPearl = true,
-							isRelocated = true,
-						});
+						WorldCoordinate spawnPos = trackedObject.desiredSpawnLocation;
+						RelocatePearl(extendedSelf, rainWorld, pearlType,
+							spawnPos.room, TileToInRoomPos(spawnPos));
 					}
 				}
 			}
+		}
+
+		// Move a pearl's marker to where the save says it is now, adding one if this pearl has no
+		// marker yet. Matching is by pearl type held on the entry itself: a parallel lookup table
+		// used to serve this, and one of the two callers forgot to keep it updated, so that pearl
+		// was never found again and a duplicate entry was appended on every refresh - several a
+		// second, for as long as the map existed.
+		static void RelocatePearl(
+			Extension extendedSelf,
+			RainWorld rainWorld,
+			DataPearl.AbstractDataPearl.DataPearlType pearlType,
+			int room,
+			Vector2 inRoomPos
+		) {
+			bool pearlRead = Mod.IsPearlRead(rainWorld, pearlType);
+
+			foreach (Extension.CollectibleData collectibleData in extendedSelf.collectibleData) {
+				if (!collectibleData.isPearl || collectibleData.pearlType == null ||
+					!collectibleData.pearlType.Equals(pearlType)
+				) {
+					continue;
+				}
+
+				collectibleData.room = room;
+				collectibleData.pos = inRoomPos;
+				collectibleData.isRelocated = true;
+				collectibleData.collected = pearlRead;
+				return;
+			}
+
+			extendedSelf.collectibleData.Add(new Extension.CollectibleData() {
+				pearlType = pearlType,
+				room = room,
+				pos = inRoomPos,
+				color = Mod.GetPearlIconColor(pearlType),
+				innerColor = DataPearl.UniquePearlHighLightColor(pearlType).GetValueOrDefault(Color.white),
+				collected = pearlRead,
+				isPearl = true,
+				isRelocated = true,
+			});
 		}
 
 		public static void RefreshTokens(this Map.MapData self) {
