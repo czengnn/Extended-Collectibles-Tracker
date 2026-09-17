@@ -57,18 +57,30 @@ namespace ExtendedCollectiblesTracker {
 		public static void PreUpdate(Map self) {
 			Extension extendedSelf = self.GetExtension();
 
-			if (!Options.instantMap.Value || self.hud.owner.GetOwnerType() != HUD.HUD.OwnerType.Player) {
+			if (!Options.instantMap.Value || self.hud.owner.GetOwnerType() != HUD.HUD.OwnerType.Player ||
+				!self.mapLoaded || !self.discLoaded
+			) {
 				extendedSelf.mapWasOpen = false;
 				return;
 			}
 
 			bool open = self.hud.owner.RevealMap;
+			bool justOpened = open && !extendedSelf.mapWasOpen;
+
+			if (justOpened) {
+				// Vanilla only reaches this once fadeCounter has naturally progressed partway into
+				// its open animation. Jumping fadeCounter straight to its target below skips past
+				// that point, so without calling this ourselves the map doesn't finish initializing
+				// until something else happens to trigger it later - which is the residual delay
+				// before the map appears that this option exists to remove.
+				self.InitiateMapView();
+			}
 
 			// Ask for the full reveal only on the frame the map opens. Snapping fade below means
 			// lastFade hits zero far more readily than vanilla's easing ever let it, and vanilla
 			// redoes RevealAllDiscovered() every time it sees that - a GetPixel and SetPixel over
 			// the whole texture, which stalls the game for as long as the map is held.
-			self.revealAllDiscovered = open && !extendedSelf.mapWasOpen;
+			self.revealAllDiscovered = justOpened;
 			extendedSelf.mapWasOpen = open;
 
 			if (open && self.fadeCounter <= 30) {
