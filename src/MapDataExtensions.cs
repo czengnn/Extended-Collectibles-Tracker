@@ -240,6 +240,15 @@ namespace ExtendedCollectiblesTracker {
 					if (realizedPearl?.firstChunk != null) {
 						RelocatePearl(extendedSelf, rainWorld, pearlType,
 							trackedObject.obj.pos.room, realizedPearl.firstChunk.pos);
+					} else if (trackedObject.obj != null) {
+						// Not realized right now - e.g. swallowed, so it has no body of its own -
+						// but the abstract object is still tracked, and the game keeps its abstract
+						// position in sync with whatever's carrying it. desiredSpawnLocation is only
+						// where it would respawn if abandoned, and goes stale while it's swallowed
+						// rather than held, since a swallowed item never re-realizes to update it.
+						WorldCoordinate abstractPos = trackedObject.obj.pos;
+						RelocatePearl(extendedSelf, rainWorld, pearlType,
+							abstractPos.room, TileToInRoomPos(abstractPos));
 					} else {
 						WorldCoordinate spawnPos = trackedObject.desiredSpawnLocation;
 						RelocatePearl(extendedSelf, rainWorld, pearlType,
