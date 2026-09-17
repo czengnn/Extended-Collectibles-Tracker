@@ -1,7 +1,9 @@
 # Changelog
 
 All notable changes to this mod are documented here. Versions correspond to the
-`version` field in `mod/modinfo.json` and `Plugin.VERSION`.
+`version` field in `mod/modinfo.json`, the version stated in its description,
+`Plugin.VERSION` and `<Version>` in the csproj; `VersionConsistencyTests` fails the
+test run if any of them, or the newest heading below, falls out of step.
 
 ## [1.0.8]
 ### Fixed
