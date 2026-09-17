@@ -29,6 +29,9 @@ All notable changes to this mod are documented here. Versions correspond to the
 - Room name labels now appear on every room the map is showing, rather than only
   rooms that have been entered. Rooms get revealed by being near them, so named
   rooms were being left blank.
+- Room name labels now fade with the layer their room is on, like the rest of the
+  map does, instead of every layer's labels being drawn at full strength on top of
+  each other.
 
 ## [1.0.7]
 ### Added

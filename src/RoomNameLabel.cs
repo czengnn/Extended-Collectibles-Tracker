@@ -14,8 +14,9 @@ namespace ExtendedCollectiblesTracker {
 	class RoomNameLabel {
 		public readonly string roomName;
 
-		// A room's position and size never change, so this is only worth computing once.
+		// A room's position, size and layer never change, so these are only worth computing once.
 		readonly int room;
+		readonly int layer;
 		readonly Vector2 aboveRoom;
 		readonly FLabel label;
 
@@ -26,6 +27,7 @@ namespace ExtendedCollectiblesTracker {
 		public RoomNameLabel(Map map, int room, string roomName) {
 			this.room = room;
 			this.roomName = roomName;
+			layer = map.mapData.LayerOfRoom(room);
 
 			IntVector2 roomSize = map.mapData.SizeOfRoom(room);
 			aboveRoom = new Vector2(roomSize.x * 10f, roomSize.y * 20f + 15f);
@@ -47,7 +49,11 @@ namespace ExtendedCollectiblesTracker {
 			Vector2 labelPos = map.RoomToMapPos(aboveRoom, room, timeStacker);
 			label.x = labelPos.x;
 			label.y = labelPos.y;
-			label.alpha = Mathf.Lerp(map.lastFade, map.fade, timeStacker);
+
+			// Fade with the room's layer, the way the map fades everything else on a layer you
+			// aren't looking at. Without this every layer's labels are drawn at full strength on
+			// top of each other, which is unreadable wherever layers overlap.
+			label.alpha = map.Alpha(layer, timeStacker, compensateForLayersInFront: true);
 		}
 
 		// Has the map revealed any of this room yet? The discover texture is what the map draws
