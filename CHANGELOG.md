@@ -7,6 +7,13 @@ test run if any of them, or the newest heading below, falls out of step.
 
 ## [1.0.10]
 ### Fixed
+- Fixed a pale pearl's sleep screen dot looking like it wasn't pulsing at all.
+  The pulse ran from the pearl's colour towards white, which is most of the way
+  for a dark pearl like SI_top at (0.01, 0.01, 0.01) and almost nowhere for a
+  bright one like SL_moon at (0.9, 0.95, 0.2) — so the dot for a pearl in the
+  shelter with you sat there looking like every other dot. It now oscillates
+  either side of the pearl's own colour, which keeps the hue and travels the
+  same distance whatever the pearl.
 - Fixed a pearl held in your hands as you slept not pulsing on the sleep screen.
   Swallowed pearls and pearls left on the shelter floor were both found, but the
   save keeps what you were holding in `playerGrasps`, apart from the shelter's

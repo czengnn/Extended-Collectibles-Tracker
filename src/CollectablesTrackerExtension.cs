@@ -164,15 +164,26 @@ namespace ExtendedCollectiblesTracker {
 		public static void GrafUpdate(CollectiblesTracker self, float timeStacker) {
 			Extension extendedSelf = self.GetExtension();
 
+			// Pulsing towards white only shows on a dark pearl. SL_moon's dot is (0.9, 0.95, 0.2)
+			// before it is brightened further, so lerping it towards white moves red and green
+			// almost nowhere and the dot sits there looking like every other one, while SI_top at
+			// (0.01, 0.01, 0.01) swings the whole way. Oscillating either side of the pearl's own
+			// colour instead keeps the hue and always travels the same distance, so a pale pearl
+			// reads as clearly as a dark one.
+			float pulse = (Mathf.Sin((extendedSelf.counter + timeStacker) / 20) + 1) / 2;
+
 			try {
 				foreach (KeyValuePair<string, List<int>> inprogress in extendedSelf.inProgress) {
 					string regionName = inprogress.Key;
 					foreach (int spriteIndex in inprogress.Value) {
 						Color color = self.spriteColors[regionName][spriteIndex];
-						self.sprites[regionName][spriteIndex].color = Color.Lerp(color, Color.white, (Mathf.Sin((extendedSelf.counter + timeStacker) / 20) + 1) / 2);
+						self.sprites[regionName][spriteIndex].color = Color.Lerp(
+							color * 0.35f,
+							Color.Lerp(color, Color.white, 0.75f),
+							pulse);
 					}
 				}
-			} catch { 
+			} catch {
 			}
 		}
 	}
