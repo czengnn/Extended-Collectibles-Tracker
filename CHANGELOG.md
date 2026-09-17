@@ -5,9 +5,12 @@ All notable changes to this mod are documented here. Versions correspond to the
 
 ## [1.0.7]
 ### Added
-- Optional room name labels on the map, off by default. Each explored room gets its
-  name drawn just above its shape, fading in with the room the way collectible
-  markers already do. Toggle it with "Show Room Names" in the Remix options.
+- Optional room name labels on the map, off by default. Each room you've visited gets
+  its name drawn just above its shape. Toggle it with "Show Room Names" in the Remix
+  options.
+- Optional instant map, off by default. The map opens as soon as the button is pressed,
+  with everything already explored shown, instead of waiting out the hold delay and
+  watching it reveal itself. Toggle it with "Instant Map" in the Remix options.
 
 ## [1.0.6]
 ### Fixed

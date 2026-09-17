@@ -20,8 +20,12 @@ alongside the original rather than replacing it — enable only one.
   - **Filled** — deciphered. **Empty** — not yet.
   - **Pulsing white** — that pearl is with you in the shelter, swallowed or on the floor.
 - **On the fast travel screen** — the region's token and pearl progress at a glance.
-- **In Remix options** — **Show Map Markers** and **Show Room Glow** toggle the two map
-  features separately.
+- **Room names** — optional labels above each room you've visited, so you can tell where
+  you are without counting shapes.
+- **Instant map** — optional; the map opens the moment you press the button, already
+  showing everything you've explored, instead of a hold delay and a gradual reveal.
+- **In Remix options** — each of the four is toggled separately: **Show Map Markers**,
+  **Show Room Glow**, **Show Room Names** and **Instant Map**.
 
 ## What this fork fixes
 

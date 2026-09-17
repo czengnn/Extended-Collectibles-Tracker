@@ -49,7 +49,9 @@ namespace ExtendedCollectiblesTracker {
 		}
 
 		static void Map_Update_HK(On.HUD.Map.orig_Update orig, HUD.Map self) {
+			RunSafely(() => MapExtensions.PreUpdate(self));
 			orig(self);
+			RunSafely(() => MapExtensions.PostUpdate(self));
 			RunSafely(() => MapExtensions.Update(self));
 		}
 

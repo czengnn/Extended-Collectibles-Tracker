@@ -15,6 +15,7 @@ namespace ExtendedCollectiblesTracker {
 			public List<CollectibleMarker> tokenMarkers = new();
 			public List<RoomNameLabel> roomLabels = new();
 			public int counter;
+			public bool mapWasOpen;
 		}
 
 		const int CollectibleRefreshInterval = 40;
@@ -47,6 +48,42 @@ namespace ExtendedCollectiblesTracker {
 				}
 				RefreshVisitedRooms(self);
 			}
+		}
+
+		// Runs before the vanilla update. The map already knows how to do this: revealAllDiscovered
+		// makes it fill in everything the save has discovered the moment it opens, and the map only
+		// starts appearing once fadeCounter passes 30, which is the hold delay. Driving those two
+		// is enough, so none of the reveal machinery itself is touched.
+		public static void PreUpdate(Map self) {
+			Extension extendedSelf = self.GetExtension();
+
+			if (!Options.instantMap.Value || self.hud.owner.GetOwnerType() != HUD.HUD.OwnerType.Player) {
+				extendedSelf.mapWasOpen = false;
+				return;
+			}
+
+			bool open = self.hud.owner.RevealMap;
+
+			// Ask for the full reveal only on the frame the map opens. Snapping fade below means
+			// lastFade hits zero far more readily than vanilla's easing ever let it, and vanilla
+			// redoes RevealAllDiscovered() every time it sees that - a GetPixel and SetPixel over
+			// the whole texture, which stalls the game for as long as the map is held.
+			self.revealAllDiscovered = open && !extendedSelf.mapWasOpen;
+			extendedSelf.mapWasOpen = open;
+
+			if (open && self.fadeCounter <= 30) {
+				self.fadeCounter = 31;
+			}
+		}
+
+		// Runs after the vanilla update, which has just eased fade towards its target; snap it the
+		// rest of the way so the map appears and disappears with the button instead of fading.
+		public static void PostUpdate(Map self) {
+			if (!Options.instantMap.Value || self.hud.owner.GetOwnerType() != HUD.HUD.OwnerType.Player) {
+				return;
+			}
+
+			self.fade = self.hud.owner.RevealMap && !self.hud.HideGeneralHud ? 1f : 0f;
 		}
 
 		public static void Update(Map self) {
