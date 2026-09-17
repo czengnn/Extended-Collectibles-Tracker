@@ -5,6 +5,20 @@ All notable changes to this mod are documented here. Versions correspond to the
 `Plugin.VERSION` and `<Version>` in the csproj; `VersionConsistencyTests` fails the
 test run if any of them, or the newest heading below, falls out of step.
 
+## [1.0.9]
+### Fixed
+- Fixed the screen appearing to freeze while the map is open, while the game
+  carried on running behind it, so releasing the map jumped forward to a world
+  that had moved on. Vanilla's key item markers only build their icon when the
+  item has icon data, then draw it either way, so an item they can't draw threw
+  a NullReferenceException out of `Map.Draw` and into `RainWorldGame.GrafUpdate`
+  — abandoning the rest of the frame's drawing, every frame, while the map was
+  up. Updating is a separate call, which is why only the picture stopped. Such
+  an item is now skipped instead, so "Slug Senses" and "Key Item Tracking" can
+  stay on. An item stored and returned by another mod can come back without the
+  type its icon is chosen by, which is the same thing that was producing phantom
+  pearl markers.
+
 ## [1.0.8]
 ### Fixed
 - Fixed a pearl picking up a duplicate map marker every time its location was

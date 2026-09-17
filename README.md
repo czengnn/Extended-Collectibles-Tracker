@@ -37,6 +37,9 @@ alongside the original rather than replacing it — enable only one.
 - Markers for pearls that have no type, pointing at pearls that aren't there — a pearl can
   come back from a save string without one, and then it can't be identified at all.
 - A carried pearl's marker sitting where the pearl was rather than where it is.
+- The screen appearing to freeze while the map is open, with the game still running behind
+  it. Vanilla's key item markers throw on an item they have no icon for, which abandons the
+  rest of that frame's drawing — so "Slug Senses" and "Key Item Tracking" can stay on.
 
 See [CHANGELOG.md](CHANGELOG.md) for the full list.
 
