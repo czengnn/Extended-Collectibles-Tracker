@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 using HUD;
 
 namespace ExtendedCollectiblesTracker {
@@ -20,6 +22,11 @@ namespace ExtendedCollectiblesTracker {
 	// mod's storage comes back without its type, which is the same thing that was putting
 	// phantom pearl markers on the map.
 	static class ItemMarkerGuard {
+		// One line per item the guard turns away, so a session that doesn't freeze can be told
+		// apart from a session that never had anything to freeze on. Skipped markers are the
+		// same handful of items frame after frame, so each is only worth reporting once.
+		static readonly HashSet<string> reported = new HashSet<string>();
+
 		// Skipping the whole call rather than catching after the fact: the throw is per frame
 		// per marker, and the vanilla method has nothing useful left to do once it can't draw
 		// its icon. A marker with a symbol already built is left alone - it can still draw.
@@ -32,6 +39,7 @@ namespace ExtendedCollectiblesTracker {
 
 				AbstractRoom room = obj.Room;
 				if (room == null) {
+					Report(obj, "its room is gone");
 					return false;
 				}
 
@@ -39,9 +47,30 @@ namespace ExtendedCollectiblesTracker {
 					return true;
 				}
 
-				return Map.ItemMarker.ItemMakerData.DataFromAbstractPhysical(obj).HasValue;
-			} catch {
+				if (Map.ItemMarker.ItemMakerData.DataFromAbstractPhysical(obj).HasValue) {
+					return true;
+				}
+
+				Report(obj, "it has no icon");
 				return false;
+			} catch (System.Exception e) {
+				Report(marker.obj, $"reading it threw {e.GetType().Name}");
+				return false;
+			}
+		}
+
+		static void Report(AbstractPhysicalObject obj, string reason) {
+			string description;
+			try {
+				description = obj == null ? "a null item" : $"{obj.type} {obj.ID}";
+			} catch {
+				description = "an unreadable item";
+			}
+
+			if (reported.Add($"{description}: {reason}")) {
+				Mod.Logger?.LogWarning(
+					$"[ExtendedCollectiblesTracker] Not drawing the key item marker for {description}: {reason}. " +
+					"Vanilla would have thrown here and stopped the rest of the frame drawing.");
 			}
 		}
 	}
