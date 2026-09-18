@@ -6,6 +6,13 @@ All notable changes to this mod are documented here. Versions correspond to the
 test run if any of them, or the newest heading below, falls out of step.
 
 ## [1.0.11]
+### Changed
+- The collection tracker on the map now heads each column the way the sleep
+  screen does: a dot in the region's own colour, and an arrow pointing down at
+  the region you're in. Same sprites and the same layout vanilla uses — `Circle4`
+  per region, `keyShiftB` turned 180° at half scale for the current one, a row
+  above the column.
+
 ### Added
 - Optional whole room reveal, off by default: a room appears on the map complete
   as soon as you enter it, instead of uncovering only the patch you walk through.

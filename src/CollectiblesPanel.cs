@@ -38,6 +38,7 @@ namespace ExtendedCollectiblesTracker {
 		}
 
 		readonly List<Cell> cells = new();
+		readonly List<FSprite> regionIcons = new();
 		readonly RainWorld rainWorld;
 		int columnCount;
 
@@ -46,6 +47,7 @@ namespace ExtendedCollectiblesTracker {
 
 			SlugcatStats.Name slugcat = rainWorld.progression.PlayingAsSlugcat;
 			PlayerProgression.MiscProgressionData progress = rainWorld.progression.miscProgressionData;
+			string currentRegion = map.mapData.regionName?.ToLowerInvariant();
 
 			foreach (string region in VisitedStoryRegions(slugcat)) {
 				int cellsBefore = cells.Count;
@@ -72,11 +74,25 @@ namespace ExtendedCollectiblesTracker {
 
 				// a region with nothing to collect gets no column rather than a blank gap
 				if (cells.Count > cellsBefore) {
+					AddRegionIcon(map, region, region == currentRegion);
 					columnCount++;
 				}
 			}
 
 			Refresh(null);
+		}
+
+		// Heading each column, the way the sleep screen does it: a dot in the region's own colour,
+		// and for the region you're in an arrow pointing down at it instead.
+		void AddRegionIcon(Map map, string region, bool current) {
+			FSprite icon = current
+				? new FSprite("keyShiftB") { rotation = 180f, scale = 0.5f }
+				: new FSprite("Circle4");
+
+			icon.color = Color.Lerp(Region.RegionColor(region), Color.white, 0.25f);
+			icon.isVisible = false;
+			map.inFrontContainer.AddChild(icon);
+			regionIcons.Add(icon);
 		}
 
 		void Add(Map map, Cell cell) {
@@ -237,17 +253,33 @@ namespace ExtendedCollectiblesTracker {
 				foreach (Cell cell in cells) {
 					cell.sprite.isVisible = false;
 				}
+				foreach (FSprite icon in regionIcons) {
+					icon.isVisible = false;
+				}
 				return;
 			}
 
 			Vector2 screenSize = rainWorld.options.ScreenSize;
+			float top = screenSize.y - Margin;
+
+			for (int column = 0; column < regionIcons.Count; column++) {
+				regionIcons[column].isVisible = true;
+				regionIcons[column].alpha = alpha;
+				regionIcons[column].x = ColumnX(screenSize, column);
+				regionIcons[column].y = top;
+			}
 
 			foreach (Cell cell in cells) {
 				cell.sprite.isVisible = true;
 				cell.sprite.alpha = alpha;
-				cell.sprite.x = screenSize.x - Margin - (columnCount - 1 - cell.column) * Spacing;
-				cell.sprite.y = screenSize.y - Margin - cell.row * Spacing;
+				cell.sprite.x = ColumnX(screenSize, cell.column);
+				// a row below the icons, so the heading has room of its own
+				cell.sprite.y = top - (cell.row + 1f) * Spacing;
 			}
+		}
+
+		float ColumnX(Vector2 screenSize, int column) {
+			return screenSize.x - Margin - (columnCount - 1 - column) * Spacing;
 		}
 
 		public void Destroy() {
@@ -255,6 +287,11 @@ namespace ExtendedCollectiblesTracker {
 				cell.sprite.RemoveFromContainer();
 			}
 			cells.Clear();
+
+			foreach (FSprite icon in regionIcons) {
+				icon.RemoveFromContainer();
+			}
+			regionIcons.Clear();
 		}
 	}
 }
