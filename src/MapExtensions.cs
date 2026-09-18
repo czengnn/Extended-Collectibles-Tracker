@@ -53,7 +53,7 @@ namespace ExtendedCollectiblesTracker {
 			// Only for the map you hold while playing: the fast travel screen has its own summary
 			// of the region it is showing, and a grid of every region over it would say nothing
 			// about where you are about to travel to.
-			if (Options.showProgressPanel.Value && hud.owner.GetOwnerType() == HUD.HUD.OwnerType.Player) {
+			if (Options.showCollectionTracker.Value && hud.owner.GetOwnerType() == HUD.HUD.OwnerType.Player) {
 				self.GetExtension().collectiblesPanel = new CollectiblesPanel(self);
 			}
 		}
@@ -152,7 +152,7 @@ namespace ExtendedCollectiblesTracker {
 			Extension extendedSelf = self.GetExtension();
 
 			extendedSelf.collectiblesPanel?.Draw(self, timeStacker,
-				Options.showProgressPanel.Value && self.visible && !self.hud.HideGeneralHud);
+				Options.showCollectionTracker.Value && self.visible && !self.hud.HideGeneralHud);
 
 			if (extendedSelf.roomLabels.Count == 0) {
 				return;

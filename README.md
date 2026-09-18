@@ -21,16 +21,16 @@ alongside the original rather than replacing it — enable only one.
   - **Ringed** — that pearl is with you: swallowed, held, or on the shelter floor. Shown
     whether or not it's been read, since a read pearl is still worth carrying.
 - **On the fast travel screen** — the region's token and pearl progress at a glance.
-- **Region progress** — optional; how many tokens and pearls you've found in each region,
-  drawn in the top right while you hold the map, with the same empty / filled / ringed
-  dots as the sleep screen. In a running game it knows what's in your hands and your
-  stomach, so a pearl's ring appears the moment you pick it up.
+- **Collection tracker on the map** — optional; the sleep screen's grid drawn in the top
+  right while you hold the map, a column per region, with the same empty / filled /
+  ringed dots. In a running game it knows what's in your hands and your stomach, so a
+  pearl's ring appears the moment you pick it up.
 - **Room names** — optional labels above each room the map is showing, so you can tell
   where you are without counting shapes.
 - **Instant map** — optional; the map opens the moment you press the button, already
   showing everything you've explored, instead of a hold delay and a gradual reveal.
 - **In Remix options** — each of the five is toggled separately: **Show Map Markers**,
-  **Show Room Glow**, **Show Room Names**, **Region Progress** and **Instant Map**.
+  **Show Room Glow**, **Show Room Names**, **Show Collection Tracker** and **Instant Map**.
 
 ## What this fork fixes
 
