@@ -6,31 +6,23 @@ namespace ExtendedCollectiblesTracker {
 		public static Options instance = new Options();
 
 		public static Configurable<bool> showRoomGlow = instance.config.Bind("showRoomGlow", true, new ConfigurableInfo(
-			"Glow over a room holding a collectible, so an unexplored one still tells you something is there without " +
-			"handing you the spot. It pins to the screen edge when the room is off the map view and fades with distance, " +
-			"which makes it a rough compass.",
+			"Show a subtle glow on the room where a collectible or pearl is located but not explored.",
 			tags: "Show Room Glow"));
 
 		public static Configurable<bool> showMapMarkers = instance.config.Bind("showMapMarkers", true, new ConfigurableInfo(
-			"Mark the exact spot of every collectible in a room the map has revealed, in its own colour. " +
-			"A marker is empty and pulsing while something is left to do with it - collecting a token, " +
-			"having a pearl read - and solid once there isn't.",
+			"Show exact locations of collectibles or pearls if the area is explored.",
 			tags: "Show Map Markers"));
 
 		public static Configurable<bool> showRoomNames = instance.config.Bind("showRoomNames", false, new ConfigurableInfo(
-			"Write each room's name just above its shape, on every room the map is showing, so you can tell where " +
-			"you are without counting shapes. Labels fade with the layer their room is on, like the rest of the map.",
+			"Show each room's name on the map, just above every room the map is showing.",
 			tags: "Show Room Names"));
 
 		public static Configurable<bool> showCollectionTracker = instance.config.Bind("showCollectionTracker", false, new ConfigurableInfo(
-			"The sleep screen's collection grid, drawn in the top right of the map: a column per region you've visited, " +
-			"a dot for each of its tokens and pearls. Filled means collected, or read by an iterator. " +
-			"A ring around a pearl means it's on you right now - held, swallowed, or beside you in the shelter.",
+			"Show the sleep screen's collection grid in the top right while the map is open.",
 			tags: "Show Collection Tracker"));
 
 		public static Configurable<bool> instantMap = instance.config.Bind("instantMap", false, new ConfigurableInfo(
-			"Open the map the moment the button goes down, already showing everywhere you have explored, " +
-			"instead of waiting out the hold delay and watching it reveal itself. It closes just as sharply.",
+			"Open the map instantly with everything already explored shown, instead of waiting for it to fade in and reveal itself.",
 			tags: "Instant Map"));
 
 		public override void Initialize() {
