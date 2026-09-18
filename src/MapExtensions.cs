@@ -12,11 +12,11 @@ namespace ExtendedCollectiblesTracker {
 	static class MapExtensions {
 
 		public class Extension {
-			public List<CollectibleMarker> tokenMarkers = new();
 			public List<RoomNameLabel> roomLabels = new();
 			public CollectiblesPanel collectiblesPanel;
 			public int counter;
 			public bool mapWasOpen;
+			public int lastRevealedRoom = -1;
 		}
 
 		const int CollectibleRefreshInterval = 40;
@@ -132,6 +132,8 @@ namespace ExtendedCollectiblesTracker {
 			Extension extendedSelf = self.GetExtension();
 			extendedSelf.counter++;
 
+			RevealRoomEntered(self, extendedSelf);
+
 			// re-resolve pearl locations and token/broadcast collected state periodically so
 			// markers follow pearls relocated after the map was built (e.g. carried to a
 			// shelter) and fill in as soon as a token is collected, instead of only updating
@@ -140,12 +142,13 @@ namespace ExtendedCollectiblesTracker {
 				self.mapData.LocatePearls(self.hud.rainWorld);
 				self.mapData.RefreshTokens();
 				RefreshShownRooms(self);
+				extendedSelf.collectiblesPanel?.RefreshProgress(self);
 			}
 
-			// Every tick rather than on the interval above: picking a pearl up should light its
-			// dot straight away, and the panel only looks at your hands, your stomach and progress
-			// flags to answer that.
-			extendedSelf.collectiblesPanel?.Refresh(self);
+			// What you're carrying every tick, so a pearl's ring appears as you pick it up; what
+			// you've collected on the interval above, since that is the half that asks the file
+			// system.
+			extendedSelf.collectiblesPanel?.RefreshCarried(self);
 		}
 
 		public static void Draw(Map self, float timeStacker) {
@@ -162,6 +165,40 @@ namespace ExtendedCollectiblesTracker {
 			foreach (var roomLabel in extendedSelf.roomLabels) {
 				roomLabel.Draw(self, timeStacker, show);
 			}
+		}
+
+		// The map takes its own sprites out of the container here; ours live in the same container
+		// and would otherwise be left behind, drawn over whatever the HUD builds next.
+		public static void ClearSprites(Map self) {
+			Extension extendedSelf = self.GetExtension();
+
+			foreach (var roomLabel in extendedSelf.roomLabels) {
+				roomLabel.Destroy();
+			}
+			extendedSelf.roomLabels.Clear();
+
+			extendedSelf.collectiblesPanel?.Destroy();
+			extendedSelf.collectiblesPanel = null;
+		}
+
+		// Once per room entered rather than every tick: filling a room is cheap, but it walks the
+		// room's pixels and applies the texture, which is not worth repeating while you stand still.
+		// The map keeps discovering around you as you walk either way, so a room you enter before
+		// this can run - while the discover texture is still loading - is not left blank.
+		static void RevealRoomEntered(Map self, Extension extendedSelf) {
+			if (!Options.revealWholeRoom.Value || !self.discLoaded ||
+				self.hud.owner.GetOwnerType() != HUD.HUD.OwnerType.Player
+			) {
+				return;
+			}
+
+			int room = self.hud.owner.MapOwnerRoom;
+			if (room == extendedSelf.lastRevealedRoom) {
+				return;
+			}
+
+			extendedSelf.lastRevealedRoom = room;
+			RoomReveal.RevealRoom(self, room);
 		}
 
 		// Label a room once the map is actually drawing it, which is what the discover texture

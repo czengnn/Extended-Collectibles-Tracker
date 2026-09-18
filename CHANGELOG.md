@@ -5,6 +5,38 @@ All notable changes to this mod are documented here. Versions correspond to the
 `Plugin.VERSION` and `<Version>` in the csproj; `VersionConsistencyTests` fails the
 test run if any of them, or the newest heading below, falls out of step.
 
+## [1.0.11]
+### Fixed
+- Fixed the collection tracker on the map not ringing a pearl lying in the
+  shelter with you — only one held or swallowed. The sleep screen counts the
+  shelter's contents, and this now does too, which is what the ring has always
+  been documented to mean. Shelters only: in any other room, ringing a pearl
+  because you happened to walk past it would leave the ring meaning nothing.
+
+### Changed
+- The collection tracker no longer asks whether every pearl has been read forty
+  times a second. `IsPearlRead` checks whether a conversation file exists on the
+  Spearmaster, Artificer and Saint campaigns, so that was a file system question
+  per pearl per region per tick for an answer that changes when an iterator reads
+  a pearl. Collected and read state now ride the map's one-second refresh; what
+  you are carrying, which is two hands and a stomach, still updates every tick.
+- Room name labels and the collection tracker are now taken down when the map
+  clears its own sprites, rather than being left in its container.
+- The collection tracker on the map now heads each column the way the sleep
+  screen does: a dot in the region's own colour, and an arrow pointing down at
+  the region you're in. Same sprites and the same layout vanilla uses — `Circle4`
+  per region, `keyShiftB` turned 180° at half scale for the current one, a row
+  above the column.
+
+### Added
+- Optional whole room reveal, off by default: a room appears on the map complete
+  as soon as you enter it, instead of uncovering only the patch you walk through.
+  Toggle it with "Reveal Whole Rooms" in the Remix options, next to Instant Map.
+  It fills the room's footprint in the map's own discovery texture, the way
+  vanilla rebuilds discovery from the rooms a save says you have visited, and
+  queues those pixels on the map's reveal list so they are drawn rather than
+  merely known.
+
 ## [1.0.10]
 ### Added
 - Optional collection tracker on the map, off by default: the sleep screen's grid,

@@ -35,9 +35,14 @@ namespace ExtendedCollectiblesTracker {
 			// null for a token, which has no "with you" state of its own
 			public DataPearl.AbstractDataPearl.DataPearlType pearlType;
 			public Func<bool> collected;
+			// pearls only: kept from the last progress refresh so the per-tick pass doesn't have
+			// to ask again
+			public bool read;
 		}
 
 		readonly List<Cell> cells = new();
+		readonly List<FSprite> regionIcons = new();
+		readonly HashSet<string> carriedPearls = new();
 		readonly RainWorld rainWorld;
 		int columnCount;
 
@@ -46,6 +51,7 @@ namespace ExtendedCollectiblesTracker {
 
 			SlugcatStats.Name slugcat = rainWorld.progression.PlayingAsSlugcat;
 			PlayerProgression.MiscProgressionData progress = rainWorld.progression.miscProgressionData;
+			string currentRegion = map.mapData.regionName?.ToLowerInvariant();
 
 			foreach (string region in VisitedStoryRegions(slugcat)) {
 				int cellsBefore = cells.Count;
@@ -72,11 +78,25 @@ namespace ExtendedCollectiblesTracker {
 
 				// a region with nothing to collect gets no column rather than a blank gap
 				if (cells.Count > cellsBefore) {
+					AddRegionIcon(map, region, region == currentRegion);
 					columnCount++;
 				}
 			}
 
-			Refresh(null);
+			RefreshProgress(null);
+		}
+
+		// Heading each column, the way the sleep screen does it: a dot in the region's own colour,
+		// and for the region you're in an arrow pointing down at it instead.
+		void AddRegionIcon(Map map, string region, bool current) {
+			FSprite icon = current
+				? new FSprite("keyShiftB") { rotation = 180f, scale = 0.5f }
+				: new FSprite("Circle4");
+
+			icon.color = Color.Lerp(Region.RegionColor(region), Color.white, 0.25f);
+			icon.isVisible = false;
+			map.inFrontContainer.AddChild(icon);
+			regionIcons.Add(icon);
 		}
 
 		void Add(Map map, Cell cell) {
@@ -184,20 +204,33 @@ namespace ExtendedCollectiblesTracker {
 			return tokens;
 		}
 
-		// Reading progression means a file existence check on some campaigns, so this rides the
-		// map's periodic tick rather than running every frame. What you are carrying is cheap
-		// enough to answer here too - two hands and a stomach.
-		public void Refresh(Map map) {
-			HashSet<string> withYou = PearlsOnYou(map);
+		// What you are carrying, answered every tick: two hands and a stomach, so a pearl's ring
+		// appears as you pick it up.
+		public void RefreshCarried(Map map) {
+			PearlsOnYou(map, carriedPearls);
 
 			foreach (Cell cell in cells) {
 				if (cell.pearlType != null) {
-					bool read = Mod.IsPearlRead(rainWorld, cell.pearlType);
-					SetElement(cell, PearlSymbols.GetElementName(read, withYou.Contains(cell.pearlType.value)));
+					SetElement(cell, PearlSymbols.GetElementName(cell.read, carriedPearls.Contains(cell.pearlType.value)));
+				}
+			}
+		}
+
+		// Whether a token is collected or a pearl read, answered on the map's periodic tick. This
+		// half is the expensive one and the one that barely changes: IsPearlRead asks the file
+		// system whether a conversation file exists on the Spearmaster, Artificer and Saint
+		// campaigns, and doing that for every pearl of every region forty times a second is a lot
+		// of asking for an answer that changes when an iterator reads a pearl.
+		public void RefreshProgress(Map map) {
+			foreach (Cell cell in cells) {
+				if (cell.pearlType != null) {
+					cell.read = Mod.IsPearlRead(rainWorld, cell.pearlType);
 				} else {
 					SetElement(cell, CollectibleSymbols.GetElementName(isPearl: false, collected: cell.collected()));
 				}
 			}
+
+			RefreshCarried(map);
 		}
 
 		static void SetElement(Cell cell, string element) {
@@ -206,10 +239,12 @@ namespace ExtendedCollectiblesTracker {
 			}
 		}
 
-		static HashSet<string> PearlsOnYou(Map map) {
-			HashSet<string> onYou = new();
+		// Fills the set it's given rather than returning a new one: this runs every tick, and the
+		// answer is at most three pearls.
+		static void PearlsOnYou(Map map, HashSet<string> onYou) {
+			onYou.Clear();
 			if (map?.hud?.owner is not Player player) {
-				return onYou;
+				return;
 			}
 
 			AddIfPearl(onYou, player.objectInStomach);
@@ -219,7 +254,19 @@ namespace ExtendedCollectiblesTracker {
 				}
 			}
 
-			return onYou;
+			// A pearl lying on the shelter floor is in the shelter with you as much as one in your
+			// hands, which is what the sleep screen counts - it reads the shelter's contents, not
+			// only what you were holding. Shelters only: in any other room "in the room with you"
+			// is not the same claim, and ringing a pearl merely because you walked past it would
+			// leave the ring meaning nothing.
+			AbstractRoom abstractRoom = player.abstractCreature?.Room;
+			if (abstractRoom == null || !abstractRoom.shelter || abstractRoom.entities == null) {
+				return;
+			}
+
+			foreach (AbstractWorldEntity entity in abstractRoom.entities) {
+				AddIfPearl(onYou, entity as AbstractPhysicalObject);
+			}
 		}
 
 		static void AddIfPearl(HashSet<string> onYou, AbstractPhysicalObject obj) {
@@ -237,16 +284,26 @@ namespace ExtendedCollectiblesTracker {
 				foreach (Cell cell in cells) {
 					cell.sprite.isVisible = false;
 				}
+				foreach (FSprite icon in regionIcons) {
+					icon.isVisible = false;
+				}
 				return;
 			}
 
 			Vector2 screenSize = rainWorld.options.ScreenSize;
 
+			for (int column = 0; column < regionIcons.Count; column++) {
+				regionIcons[column].isVisible = true;
+				regionIcons[column].alpha = alpha;
+				regionIcons[column].x = PanelLayout.ColumnX(screenSize.x, Margin, Spacing, columnCount, column);
+				regionIcons[column].y = PanelLayout.IconY(screenSize.y, Margin);
+			}
+
 			foreach (Cell cell in cells) {
 				cell.sprite.isVisible = true;
 				cell.sprite.alpha = alpha;
-				cell.sprite.x = screenSize.x - Margin - (columnCount - 1 - cell.column) * Spacing;
-				cell.sprite.y = screenSize.y - Margin - cell.row * Spacing;
+				cell.sprite.x = PanelLayout.ColumnX(screenSize.x, Margin, Spacing, columnCount, cell.column);
+				cell.sprite.y = PanelLayout.RowY(screenSize.y, Margin, Spacing, cell.row);
 			}
 		}
 
@@ -255,6 +312,11 @@ namespace ExtendedCollectiblesTracker {
 				cell.sprite.RemoveFromContainer();
 			}
 			cells.Clear();
+
+			foreach (FSprite icon in regionIcons) {
+				icon.RemoveFromContainer();
+			}
+			regionIcons.Clear();
 		}
 	}
 }

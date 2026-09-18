@@ -8,23 +8,26 @@ alongside the original rather than replacing it — enable only one.
 
 ## Features
 
-- **On the map** — a marker per collectible, each in its own colour: data pearls, blue and
-  gold arena tokens, red safari, green slugcat, white broadcast (Spearmaster only).
-  - **Empty and pulsing** while something's left to do, **solid** once it isn't.
-  - **Unexplored rooms** get a glow instead of a spot, pinned to the screen edge when
-    off-screen and fading with distance — a rough compass.
-- **On the sleep screen** — a dot per pearl, per region visited. **Filled** means
-  deciphered; a **ring** means it's with you, held, swallowed or on the shelter floor,
-  read or not.
-- **On the fast travel screen** — the region's token and pearl progress at a glance.
-- **Collection tracker on the map** — optional; that same grid in the top right while you
-  hold the map. It reads your hands and stomach live, so a ring appears the moment you
-  pick a pearl up.
-- **Room names** — optional labels above each room the map is showing.
-- **Instant map** — optional; opens and closes with the button, everything you've explored
-  already shown.
-- **In Remix options** — five separate toggles: **Show Map Markers**, **Show Room Glow**,
-  **Show Room Names**, **Show Collection Tracker** and **Instant Map**.
+One Remix toggle each:
+
+- **Show Map Markers** — every collectible's exact spot on the map, in its own colour.
+- **Show Room Glow** — a glow over a room holding one, before you've explored it.
+- **Show Room Names** — each room's name above its shape.
+- **Show Collection Tracker** — the sleep screen's grid in the map's top right, a column
+  per region.
+- **Instant Map** — the map opens and closes with the button, no delay or fade.
+- **Reveal Whole Rooms** — a room appears complete when you enter it, not just where you
+  walked.
+
+Always on: a dot per pearl per region on the sleep screen — and the region's progress on
+the fast travel screen.
+
+## What the symbols mean
+
+- **Map marker** — empty and pulsing while something's left to do, solid once it isn't.
+- **Tracker dot** — empty until collected or deciphered, filled after.
+- **Ring around a dot** — that pearl is on you: held, swallowed, or in the shelter.
+- Everything is drawn in its own collectible's colour.
 
 ## What this fork fixes
 

@@ -242,31 +242,39 @@ namespace ExtendedCollectiblesTracker {
 					// which matters when it's being carried: the tracker only records where the
 					// pearl would respawn, so the marker would otherwise sit at a stale tile
 					// while the pearl moves around the room in your hands.
+					// Which of the pearl's recorded positions to believe, in order of how much each
+					// knows about where it actually is. See Core.PearlPosition.
 					PhysicalObject realizedPearl = trackedObject.obj?.realizedObject;
-					if (realizedPearl?.firstChunk != null) {
-						RelocatePearl(extendedSelf, rainWorld, pearlType,
-							trackedObject.obj.pos.room, realizedPearl.firstChunk.pos);
-						continue;
-					}
+					WorldCoordinate liveAbstractPos = trackedObject.obj?.pos ?? default;
 
-					// No body to ask, so the best that's left is an abstract tile. Take them in
-					// order of how much they know about where the pearl actually is: the live
-					// abstract object stays in step with whatever is carrying it, the saved
-					// representation records where it last was, and desiredSpawnLocation is only
-					// where it would reappear if abandoned. That last one is also the one that
-					// lies - it reads (-1, 0) until the game works a spawn out, which put the
-					// marker a tile off the room's corner, nowhere near the pearl.
-					WorldCoordinate abstractPos = trackedObject.obj?.pos ?? default;
-					if (!IsUsable(abstractPos)) {
-						abstractPos = trackedPhysicalObject.pos;
-					}
-					if (!IsUsable(abstractPos)) {
-						abstractPos = trackedObject.desiredSpawnLocation;
-					}
+					switch (PearlPosition.Choose(
+						hasRealizedBody: realizedPearl?.firstChunk != null,
+						liveAbstractUsable: IsUsable(liveAbstractPos),
+						savedRepresentationUsable: IsUsable(trackedPhysicalObject.pos),
+						desiredSpawnUsable: IsUsable(trackedObject.desiredSpawnLocation)
+					)) {
+						case PearlPositionSource.RealizedBody:
+							RelocatePearl(extendedSelf, rainWorld, pearlType,
+								trackedObject.obj.pos.room, realizedPearl.firstChunk.pos);
+							break;
 
-					if (IsUsable(abstractPos)) {
-						RelocatePearl(extendedSelf, rainWorld, pearlType,
-							abstractPos.room, TileToInRoomPos(abstractPos));
+						case PearlPositionSource.LiveAbstract:
+							RelocatePearl(extendedSelf, rainWorld, pearlType,
+								liveAbstractPos.room, TileToInRoomPos(liveAbstractPos));
+							break;
+
+						case PearlPositionSource.SavedRepresentation:
+							RelocatePearl(extendedSelf, rainWorld, pearlType,
+								trackedPhysicalObject.pos.room, TileToInRoomPos(trackedPhysicalObject.pos));
+							break;
+
+						case PearlPositionSource.DesiredSpawn:
+							RelocatePearl(extendedSelf, rainWorld, pearlType,
+								trackedObject.desiredSpawnLocation.room,
+								TileToInRoomPos(trackedObject.desiredSpawnLocation));
+							break;
+
+						// nothing usable: leave the marker wherever a better source already put it
 					}
 				}
 			}

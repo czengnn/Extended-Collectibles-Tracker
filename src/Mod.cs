@@ -26,6 +26,7 @@ namespace ExtendedCollectiblesTracker {
 			On.HUD.Map.ctor += Map_ctor_HK;
 			On.HUD.Map.Update += Map_Update_HK;
 			On.HUD.Map.Draw += Map_Draw_HK;
+			On.HUD.Map.ClearSprites += Map_ClearSprites_HK;
 			On.HUD.Map.ItemMarker.Draw += Map_ItemMarker_Draw_HK;
 			// the original constructor was replaced with `ctor_World_RainWorld` in The Watcher update
 			// due to now having an overloaded constructor
@@ -57,6 +58,11 @@ namespace ExtendedCollectiblesTracker {
 		static void Map_Draw_HK(On.HUD.Map.orig_Draw orig, HUD.Map self, float timeStacker) {
 			orig(self, timeStacker);
 			RunSafely(() => MapExtensions.Draw(self, timeStacker));
+		}
+
+		static void Map_ClearSprites_HK(On.HUD.Map.orig_ClearSprites orig, HUD.Map self) {
+			RunSafely(() => MapExtensions.ClearSprites(self));
+			orig(self);
 		}
 
 		static void Map_ItemMarker_Draw_HK(On.HUD.Map.ItemMarker.orig_Draw orig, HUD.Map.ItemMarker self, float timeStacker) {
