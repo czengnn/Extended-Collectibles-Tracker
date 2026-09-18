@@ -2,6 +2,8 @@ using HUD;
 using RWCustom;
 using UnityEngine;
 
+using ExtendedCollectiblesTracker.Core;
+
 namespace ExtendedCollectiblesTracker {
 	// Marks a whole room as discovered the moment you stand in it, rather than the patch around you
 	// that walking through it uncovers.
@@ -27,10 +29,12 @@ namespace ExtendedCollectiblesTracker {
 			IntVector2 corner = IntVector2.FromVector2(
 				map.OnTexturePos(Vector2.zero, room, accountForLayer: true) / map.DiscoverResolution);
 
+			int columns = RoomFootprint.PixelSpan(roomSize.x, map.DiscoverResolution);
+			int rows = RoomFootprint.PixelSpan(roomSize.y, map.DiscoverResolution);
 			bool discoveredAnything = false;
 
-			for (int x = 0; x <= roomSize.x / map.DiscoverResolution; x++) {
-				for (int y = 0; y <= roomSize.y / map.DiscoverResolution; y++) {
+			for (int x = 0; x < columns; x++) {
+				for (int y = 0; y < rows; y++) {
 					IntVector2 texturePos = new IntVector2(corner.x + x, corner.y + y);
 
 					if (texturePos.x < 0 || texturePos.y < 0 ||

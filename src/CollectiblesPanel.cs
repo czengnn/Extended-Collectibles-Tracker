@@ -35,10 +35,14 @@ namespace ExtendedCollectiblesTracker {
 			// null for a token, which has no "with you" state of its own
 			public DataPearl.AbstractDataPearl.DataPearlType pearlType;
 			public Func<bool> collected;
+			// pearls only: kept from the last progress refresh so the per-tick pass doesn't have
+			// to ask again
+			public bool read;
 		}
 
 		readonly List<Cell> cells = new();
 		readonly List<FSprite> regionIcons = new();
+		readonly HashSet<string> carriedPearls = new();
 		readonly RainWorld rainWorld;
 		int columnCount;
 
@@ -79,7 +83,7 @@ namespace ExtendedCollectiblesTracker {
 				}
 			}
 
-			Refresh(null);
+			RefreshProgress(null);
 		}
 
 		// Heading each column, the way the sleep screen does it: a dot in the region's own colour,
@@ -200,20 +204,33 @@ namespace ExtendedCollectiblesTracker {
 			return tokens;
 		}
 
-		// Reading progression means a file existence check on some campaigns, so this rides the
-		// map's periodic tick rather than running every frame. What you are carrying is cheap
-		// enough to answer here too - two hands and a stomach.
-		public void Refresh(Map map) {
-			HashSet<string> withYou = PearlsOnYou(map);
+		// What you are carrying, answered every tick: two hands and a stomach, so a pearl's ring
+		// appears as you pick it up.
+		public void RefreshCarried(Map map) {
+			PearlsOnYou(map, carriedPearls);
 
 			foreach (Cell cell in cells) {
 				if (cell.pearlType != null) {
-					bool read = Mod.IsPearlRead(rainWorld, cell.pearlType);
-					SetElement(cell, PearlSymbols.GetElementName(read, withYou.Contains(cell.pearlType.value)));
+					SetElement(cell, PearlSymbols.GetElementName(cell.read, carriedPearls.Contains(cell.pearlType.value)));
+				}
+			}
+		}
+
+		// Whether a token is collected or a pearl read, answered on the map's periodic tick. This
+		// half is the expensive one and the one that barely changes: IsPearlRead asks the file
+		// system whether a conversation file exists on the Spearmaster, Artificer and Saint
+		// campaigns, and doing that for every pearl of every region forty times a second is a lot
+		// of asking for an answer that changes when an iterator reads a pearl.
+		public void RefreshProgress(Map map) {
+			foreach (Cell cell in cells) {
+				if (cell.pearlType != null) {
+					cell.read = Mod.IsPearlRead(rainWorld, cell.pearlType);
 				} else {
 					SetElement(cell, CollectibleSymbols.GetElementName(isPearl: false, collected: cell.collected()));
 				}
 			}
+
+			RefreshCarried(map);
 		}
 
 		static void SetElement(Cell cell, string element) {
@@ -222,10 +239,12 @@ namespace ExtendedCollectiblesTracker {
 			}
 		}
 
-		static HashSet<string> PearlsOnYou(Map map) {
-			HashSet<string> onYou = new();
+		// Fills the set it's given rather than returning a new one: this runs every tick, and the
+		// answer is at most three pearls.
+		static void PearlsOnYou(Map map, HashSet<string> onYou) {
+			onYou.Clear();
 			if (map?.hud?.owner is not Player player) {
-				return onYou;
+				return;
 			}
 
 			AddIfPearl(onYou, player.objectInStomach);
@@ -234,8 +253,6 @@ namespace ExtendedCollectiblesTracker {
 					AddIfPearl(onYou, grasp?.grabbed?.abstractPhysicalObject);
 				}
 			}
-
-			return onYou;
 		}
 
 		static void AddIfPearl(HashSet<string> onYou, AbstractPhysicalObject obj) {
@@ -260,26 +277,20 @@ namespace ExtendedCollectiblesTracker {
 			}
 
 			Vector2 screenSize = rainWorld.options.ScreenSize;
-			float top = screenSize.y - Margin;
 
 			for (int column = 0; column < regionIcons.Count; column++) {
 				regionIcons[column].isVisible = true;
 				regionIcons[column].alpha = alpha;
-				regionIcons[column].x = ColumnX(screenSize, column);
-				regionIcons[column].y = top;
+				regionIcons[column].x = PanelLayout.ColumnX(screenSize.x, Margin, Spacing, columnCount, column);
+				regionIcons[column].y = PanelLayout.IconY(screenSize.y, Margin);
 			}
 
 			foreach (Cell cell in cells) {
 				cell.sprite.isVisible = true;
 				cell.sprite.alpha = alpha;
-				cell.sprite.x = ColumnX(screenSize, cell.column);
-				// a row below the icons, so the heading has room of its own
-				cell.sprite.y = top - (cell.row + 1f) * Spacing;
+				cell.sprite.x = PanelLayout.ColumnX(screenSize.x, Margin, Spacing, columnCount, cell.column);
+				cell.sprite.y = PanelLayout.RowY(screenSize.y, Margin, Spacing, cell.row);
 			}
-		}
-
-		float ColumnX(Vector2 screenSize, int column) {
-			return screenSize.x - Margin - (columnCount - 1 - column) * Spacing;
 		}
 
 		public void Destroy() {

@@ -12,6 +12,9 @@ namespace ExtendedCollectiblesTracker {
 	// marker per room turned that into several times the work over the region's entire reveal,
 	// which froze the map and stalled the cycle transition on a black screen.
 	class RoomNameLabel {
+		// x, y pairs as fractions of the room: its centre, then its four corners
+		static readonly float[] SampleFractions = { 0.5f, 0.5f, 0f, 0f, 1f, 0f, 0f, 1f, 1f, 1f };
+
 		public readonly string roomName;
 
 		// A room's position, size and layer never change, so these are only worth computing once.
@@ -69,13 +72,14 @@ namespace ExtendedCollectiblesTracker {
 			IntVector2 roomSize = map.mapData.SizeOfRoom(room);
 			Vector2 roomExtent = new Vector2(roomSize.x * 20f, roomSize.y * 20f);
 
-			foreach (Vector2 sample in new[] {
-				roomExtent / 2f,
-				Vector2.zero,
-				new Vector2(roomExtent.x, 0f),
-				new Vector2(0f, roomExtent.y),
-				roomExtent
-			}) {
+			// Fractions of the room rather than an array of points: this runs for every room on
+			// every periodic tick, and an array per room per second is a pointless thing to hand
+			// the garbage collector.
+			for (int i = 0; i < SampleFractions.Length; i += 2) {
+				Vector2 sample = new Vector2(
+					roomExtent.x * SampleFractions[i],
+					roomExtent.y * SampleFractions[i + 1]);
+
 				IntVector2 texturePos = IntVector2.FromVector2(
 					map.OnTexturePos(sample, room, accountForLayer: true) / map.DiscoverResolution);
 
