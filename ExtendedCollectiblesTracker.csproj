@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <Version>1.0.9</Version>
+    <Version>1.0.10</Version>
 		<LangVersion>9.0</LangVersion>
     <OutputPath>.\mod\plugins</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>

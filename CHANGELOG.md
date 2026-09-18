@@ -5,6 +5,58 @@ All notable changes to this mod are documented here. Versions correspond to the
 `Plugin.VERSION` and `<Version>` in the csproj; `VersionConsistencyTests` fails the
 test run if any of them, or the newest heading below, falls out of step.
 
+## [1.0.10]
+### Added
+- Optional collection tracker on the map, off by default: the sleep screen's grid,
+  a column per region, drawn in the top right while you hold the map and fading
+  with it. Toggle it with "Show Collection Tracker" in the Remix options.
+  Vanilla's own tracker can't be reused for this — it's a `PositionedMenuObject`
+  that needs a `Menu`, and there isn't one in a running game — but the data
+  behind it is all public, and
+  in a running game what you're carrying is simply your hands and your stomach
+  rather than something to infer from a save, so a pearl's ring appears as soon
+  as you pick it up.
+
+### Changed
+- A pearl that's with you is now marked with a ring around its dot, on the sleep
+  screen and the new panel alike, instead of pulsing towards white. The pulse was
+  only legible on a dark pearl: SI_top is (0.01, 0.01, 0.01) and swung the whole
+  way, while SL_moon at (0.9, 0.95, 0.2) had nowhere left to travel and sat there
+  looking like every other dot. The ring also separates two facts the old dot
+  conflated — read, and with you — so a deciphered pearl in your hands still says
+  so. That matters because a read pearl is far from useless: scavengers score one
+  at 10 and gifting one is worth `InfluenceTempLike(2f)`, and it still counts
+  towards passage progress.
+
+### Fixed
+- Fixed a pearl's map marker sitting well away from the pearl — often just
+  outside the room — while the game's own key item marker had it right. A
+  tracker's `desiredSpawnLocation` is where the item would reappear if
+  abandoned, not where it is, and it reads `(-1, 0)` until the game works one
+  out; taken literally that draws the marker a tile off the room's corner. The
+  abstract positions are now tried in order of how much they know — the live
+  object, then the saved representation, then the spawn location — and a
+  coordinate that isn't a real tile is ignored rather than drawn. Markers placed
+  from a tile now also sit in the middle of it, as the game's own do, instead of
+  its corner.
+- Fixed a pearl held in your hands as you slept not counting as being in the
+  shelter with you. Swallowed pearls and pearls left on the shelter floor were
+  both found, but the save keeps what you were holding in `playerGrasps`, apart
+  from the shelter's contents, and nothing looked there. Note that a pearl whose
+  type has been lost — another mod storing and returning it can reduce it to
+  `Misc` — has no dot on that row at all, and nothing can recover which pearl it
+  was.
+- Fixed Instant Map taking a moment to arrive the first time it was opened in a
+  region. The map's own setup runs `RevealAllDiscovered()` and then
+  `InitiateMapView()`, and on a map that has never been opened the second of
+  those calls `ResetReveal()`, which wipes the reveal texture the first had just
+  filled in — so the map had to reveal itself outwards from the slugcat after
+  all. Both are now called in the opposite order, on the frame the map opens.
+- Instant Map now shows on the frame the button goes down rather than two frames
+  later, and goes away on the frame it comes up. `fade` was being set after the
+  vanilla update, which had already copied it into `lastFade` and decided
+  `visible = fade > 0f && lastFade > 0f` for that frame; it is now set before.
+
 ## [1.0.9]
 ### Fixed
 - Fixed the screen appearing to freeze while the map is open, while the game

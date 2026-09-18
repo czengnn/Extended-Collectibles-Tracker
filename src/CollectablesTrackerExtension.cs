@@ -7,24 +7,15 @@ using MoreSlugcats;
 
 using UnityEngine;
 
+using ExtendedCollectiblesTracker.Core;
+
 namespace ExtendedCollectiblesTracker {
 	static class CollectiblesTrackerExtension {
 		public static List<string> presavePendingObjects = new List<string>();
-		public class Extension {
-			public int counter;
-			public Dictionary<string, List<int>> inProgress = new();
-		}
-
-		static ConditionalWeakTable<CollectiblesTracker, Extension> extensions = new();
-
-		public static Extension GetExtension(this CollectiblesTracker self) {
-			return extensions.GetOrCreateValue(self);
-		}
 
 		public static void ctor(CollectiblesTracker self, Menu.Menu menu, MenuObject owner, Vector2 pos, FContainer container, SlugcatStats.Name saveSlot) {
 			RainWorld rainWorld = menu.manager.rainWorld;
 			PlayerProgression.MiscProgressionData miscProgressionData = rainWorld.progression.miscProgressionData;
-			Extension extendedSelf = self.GetExtension();
 
 			// get pearls with you
 			List<DataPearl.AbstractDataPearl.DataPearlType> withUniquePearls = new();
@@ -45,6 +36,25 @@ namespace ExtendedCollectiblesTracker {
 							if (abstractPhysicalObject is DataPearl.AbstractDataPearl abstractDataPearl) {
 								if (DataPearl.PearlIsNotMisc(abstractDataPearl.dataPearlType)) {
 									withUniquePearls.Add(abstractDataPearl.dataPearlType);
+								}
+							}
+						}
+					}
+
+					// A pearl in your hands is in the shelter with you as much as a swallowed one is,
+					// but the save keeps what you were holding in its own list rather than with the
+					// shelter's contents, so nothing below would have found it.
+					if (saveState.playerGrasps != null) {
+						foreach (string heldItem in saveState.playerGrasps) {
+							if (string.IsNullOrEmpty(heldItem) || heldItem == "0") {
+								continue;
+							}
+
+							AbstractPhysicalObject abstractPhysicalObject = SaveState.AbstractPhysicalObjectFromString(null, heldItem);
+
+							if (abstractPhysicalObject is DataPearl.AbstractDataPearl heldPearl) {
+								if (DataPearl.PearlIsNotMisc(heldPearl.dataPearlType)) {
+									withUniquePearls.Add(heldPearl.dataPearlType);
 								}
 							}
 						}
@@ -110,23 +120,17 @@ namespace ExtendedCollectiblesTracker {
 				foreach (var pearlData in regionPlacedPearls.Value) {
 					DataPearl.AbstractDataPearl.DataPearlType pearlType = pearlData;
 
-					if (withUniquePearls.Contains(pearlType)) {
-						int spriteIndex = self.sprites[regionName].Count;
-						if (!extendedSelf.inProgress.TryGetValue(regionName, out List<int> inProgress))
-						{
-							inProgress = new();
-							extendedSelf.inProgress[regionName] = inProgress;
-						}
-
-						inProgress.Add(spriteIndex);
-					}
-
 					bool pearlRead = Mod.IsPearlRead(rainWorld, pearlType);
+
+					// Filled once an iterator has read it, ringed while it is in the shelter with
+					// you - two separate facts, drawn separately, because a read pearl is still
+					// worth carrying and "read" shouldn't hide that you have it. See PearlSymbols.
+					string element = PearlSymbols.GetElementName(pearlRead, withUniquePearls.Contains(pearlType));
 
 					Color color = Mod.GetPearlIconColor(pearlType);
 					self.spriteColors[regionName].Add(color);
 
-					FSprite sprite = new(pearlRead ? "dpOn" : "dpOff")
+					FSprite sprite = new(element)
 					{
 						color = color
 					};
@@ -137,24 +141,5 @@ namespace ExtendedCollectiblesTracker {
 			}
 		}
 
-		public static void Update(CollectiblesTracker self) {
-			Extension extendedSelf = self.GetExtension();
-			extendedSelf.counter ++;
-		}
-
-		public static void GrafUpdate(CollectiblesTracker self, float timeStacker) {
-			Extension extendedSelf = self.GetExtension();
-
-			try {
-				foreach (KeyValuePair<string, List<int>> inprogress in extendedSelf.inProgress) {
-					string regionName = inprogress.Key;
-					foreach (int spriteIndex in inprogress.Value) {
-						Color color = self.spriteColors[regionName][spriteIndex];
-						self.sprites[regionName][spriteIndex].color = Color.Lerp(color, Color.white, (Mathf.Sin((extendedSelf.counter + timeStacker) / 20) + 1) / 2);
-					}
-				}
-			} catch { 
-			}
-		}
 	}
 }

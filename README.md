@@ -8,38 +8,37 @@ alongside the original rather than replacing it — enable only one.
 
 ## Features
 
-- **On the map** — a marker per collectible your slugcat can get: data pearls, blue and
-  gold arena tokens, red safari, green slugcat, white broadcast (Spearmaster only), each
-  in its own colour.
-  - **Empty and pulsing** while there's something left to do, **solid** once there isn't:
-    a token when collected, a pearl when an iterator deciphers it.
-  - **Unexplored rooms** get a glow instead of an exact spot. It pins to the screen edge
-    when off-screen and fades with distance, so it doubles as a rough compass.
-- **On the sleep screen** — one dot per pearl, for each region you've visited, after the
-  vanilla unlock row.
-  - **Filled** — deciphered. **Empty** — not yet.
-  - **Pulsing white** — that pearl is with you in the shelter, swallowed or on the floor.
+- **On the map** — a marker per collectible, each in its own colour: data pearls, blue and
+  gold arena tokens, red safari, green slugcat, white broadcast (Spearmaster only).
+  - **Empty and pulsing** while something's left to do, **solid** once it isn't.
+  - **Unexplored rooms** get a glow instead of a spot, pinned to the screen edge when
+    off-screen and fading with distance — a rough compass.
+- **On the sleep screen** — a dot per pearl, per region visited. **Filled** means
+  deciphered; a **ring** means it's with you, held, swallowed or on the shelter floor,
+  read or not.
 - **On the fast travel screen** — the region's token and pearl progress at a glance.
-- **Room names** — optional labels above each room the map is showing, so you can tell
-  where you are without counting shapes.
-- **Instant map** — optional; the map opens the moment you press the button, already
-  showing everything you've explored, instead of a hold delay and a gradual reveal.
-- **In Remix options** — each of the four is toggled separately: **Show Map Markers**,
-  **Show Room Glow**, **Show Room Names** and **Instant Map**.
+- **Collection tracker on the map** — optional; that same grid in the top right while you
+  hold the map. It reads your hands and stomach live, so a ring appears the moment you
+  pick a pearl up.
+- **Room names** — optional labels above each room the map is showing.
+- **Instant map** — optional; opens and closes with the button, everything you've explored
+  already shown.
+- **In Remix options** — five separate toggles: **Show Map Markers**, **Show Room Glow**,
+  **Show Room Names**, **Show Collection Tracker** and **Instant Map**.
 
 ## What this fork fixes
 
-- Hibernation and death screens freezing, with the slugcat animation still playing and no
-  button responding — two separate causes, both since fixed.
-- Pearl and token markers going stale until the map was rebuilt on the next hibernation.
-- A pearl collecting a duplicate marker a few times a second, until the pile of them froze
-  the map and the rest of the game with it.
-- Markers for pearls that have no type, pointing at pearls that aren't there — a pearl can
-  come back from a save string without one, and then it can't be identified at all.
-- A carried pearl's marker sitting where the pearl was rather than where it is.
-- The screen appearing to freeze while the map is open, with the game still running behind
-  it. Vanilla's key item markers throw on an item they have no icon for, which abandons the
-  rest of that frame's drawing — so "Slug Senses" and "Key Item Tracking" can stay on.
+- Hibernation and death screens freezing, with the slugcat animation still playing — two
+  separate causes.
+- The picture freezing while the map is held, the game still running behind it. Vanilla's
+  key item markers throw on an item they have no icon for, abandoning the rest of that
+  frame's drawing — so "Slug Senses" and "Key Item Tracking" can both stay on.
+- A pearl collecting a duplicate marker a few times a second, until the pile froze the map.
+- Markers for pearls with no type, pointing at pearls that aren't there.
+- Markers sitting where a pearl used to be, or a room away from where it is.
+- Pearl and token markers going stale until the next hibernation.
+- A pearl in your hands as you slept not counting as being in the shelter with you.
+- Instant Map revealing itself gradually the first time it opened in a region.
 
 See [CHANGELOG.md](CHANGELOG.md) for the full list.
 

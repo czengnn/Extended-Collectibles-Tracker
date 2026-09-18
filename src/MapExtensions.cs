@@ -14,6 +14,7 @@ namespace ExtendedCollectiblesTracker {
 		public class Extension {
 			public List<CollectibleMarker> tokenMarkers = new();
 			public List<RoomNameLabel> roomLabels = new();
+			public CollectiblesPanel collectiblesPanel;
 			public int counter;
 			public bool mapWasOpen;
 		}
@@ -48,36 +49,77 @@ namespace ExtendedCollectiblesTracker {
 				}
 				RefreshShownRooms(self);
 			}
+
+			// Only for the map you hold while playing: the fast travel screen has its own summary
+			// of the region it is showing, and a grid of every region over it would say nothing
+			// about where you are about to travel to.
+			if (Options.showCollectionTracker.Value && hud.owner.GetOwnerType() == HUD.HUD.OwnerType.Player) {
+				self.GetExtension().collectiblesPanel = new CollectiblesPanel(self);
+			}
 		}
 
-		// Runs before the vanilla update. The map already knows how to do this: revealAllDiscovered
-		// makes it fill in everything the save has discovered the moment it opens, and the map only
-		// starts appearing once fadeCounter passes 30, which is the hold delay. Driving those two
-		// is enough, so none of the reveal machinery itself is touched.
+		// Runs before the vanilla update, and everything here depends on being before it.
+		//
+		// Vanilla decides whether the map is on screen with
+		//
+		//     lastFade = fade;                          // at the top of Update
+		//     ...
+		//     visible = fade > 0f && lastFade > 0f;
+		//
+		// so a fade set after the update can't be seen until the update after that. Setting it
+		// here instead means lastFade picks it up on the same frame the button goes down, and
+		// the map is on screen for that frame's draw rather than two frames later.
+		//
+		// That costs the one thing vanilla does for us. Its own setup,
+		//
+		//     if (lastFade == 0f) { if (revealAllDiscovered) RevealAllDiscovered(); InitiateMapView(); }
+		//
+		// only runs while lastFade is still zero, which is exactly what we've just stopped being
+		// true, so the map would open centred wherever it was left. Hence doing both ourselves.
+		// SchuhBaum's MapOptions drives its own skip-fade this way, for the same reason.
 		public static void PreUpdate(Map self) {
 			Extension extendedSelf = self.GetExtension();
 
-			if (!Options.instantMap.Value || self.hud.owner.GetOwnerType() != HUD.HUD.OwnerType.Player) {
+			if (!Options.instantMap.Value || self.hud.owner.GetOwnerType() != HUD.HUD.OwnerType.Player ||
+				!self.mapLoaded || !self.discLoaded
+			) {
 				extendedSelf.mapWasOpen = false;
 				return;
 			}
 
-			bool open = self.hud.owner.RevealMap;
-
-			// Ask for the full reveal only on the frame the map opens. Snapping fade below means
-			// lastFade hits zero far more readily than vanilla's easing ever let it, and vanilla
-			// redoes RevealAllDiscovered() every time it sees that - a GetPixel and SetPixel over
-			// the whole texture, which stalls the game for as long as the map is held.
-			self.revealAllDiscovered = open && !extendedSelf.mapWasOpen;
-			extendedSelf.mapWasOpen = open;
-
-			if (open && self.fadeCounter <= 30) {
-				self.fadeCounter = 31;
+			if (!self.hud.owner.RevealMap) {
+				// Closing is the same problem in reverse: leave lastFade behind and the map hangs
+				// on screen for a frame after the button comes up.
+				extendedSelf.mapWasOpen = false;
+				self.fadeCounter = 0;
+				self.fade = 0f;
+				self.lastFade = 0f;
+				return;
 			}
+
+			bool justOpened = !extendedSelf.mapWasOpen;
+			extendedSelf.mapWasOpen = true;
+
+			// Past the hold delay, which is what fadeCounter counts out, and fully faded in.
+			self.fadeCounter = 31;
+			self.fade = 1f;
+
+			if (!justOpened) {
+				return;
+			}
+
+			// Centre on the slugcat, then fill in everything the save has discovered. In that
+			// order, unlike vanilla's: InitiateMapView can call ResetReveal, which wipes the
+			// reveal texture, and doing that second would wipe what we had just revealed. Only on
+			// the frame it opens - RevealAllDiscovered is a GetPixel and a SetPixel for every
+			// pixel of the region, which is not something to repeat while the map is held.
+			self.InitiateMapView();
+			self.revealAllDiscovered = true;
+			self.RevealAllDiscovered();
 		}
 
-		// Runs after the vanilla update, which has just eased fade towards its target; snap it the
-		// rest of the way so the map appears and disappears with the button instead of fading.
+		// The vanilla update has just eased fade back towards its target; hold it where PreUpdate
+		// put it so the map stays put instead of easing in behind the first frame.
 		public static void PostUpdate(Map self) {
 			if (!Options.instantMap.Value || self.hud.owner.GetOwnerType() != HUD.HUD.OwnerType.Player) {
 				return;
@@ -99,10 +141,19 @@ namespace ExtendedCollectiblesTracker {
 				self.mapData.RefreshTokens();
 				RefreshShownRooms(self);
 			}
+
+			// Every tick rather than on the interval above: picking a pearl up should light its
+			// dot straight away, and the panel only looks at your hands, your stomach and progress
+			// flags to answer that.
+			extendedSelf.collectiblesPanel?.Refresh(self);
 		}
 
 		public static void Draw(Map self, float timeStacker) {
 			Extension extendedSelf = self.GetExtension();
+
+			extendedSelf.collectiblesPanel?.Draw(self, timeStacker,
+				Options.showCollectionTracker.Value && self.visible && !self.hud.HideGeneralHud);
+
 			if (extendedSelf.roomLabels.Count == 0) {
 				return;
 			}
