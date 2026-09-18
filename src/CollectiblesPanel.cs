@@ -253,6 +253,20 @@ namespace ExtendedCollectiblesTracker {
 					AddIfPearl(onYou, grasp?.grabbed?.abstractPhysicalObject);
 				}
 			}
+
+			// A pearl lying on the shelter floor is in the shelter with you as much as one in your
+			// hands, which is what the sleep screen counts - it reads the shelter's contents, not
+			// only what you were holding. Shelters only: in any other room "in the room with you"
+			// is not the same claim, and ringing a pearl merely because you walked past it would
+			// leave the ring meaning nothing.
+			AbstractRoom abstractRoom = player.abstractCreature?.Room;
+			if (abstractRoom == null || !abstractRoom.shelter || abstractRoom.entities == null) {
+				return;
+			}
+
+			foreach (AbstractWorldEntity entity in abstractRoom.entities) {
+				AddIfPearl(onYou, entity as AbstractPhysicalObject);
+			}
 		}
 
 		static void AddIfPearl(HashSet<string> onYou, AbstractPhysicalObject obj) {

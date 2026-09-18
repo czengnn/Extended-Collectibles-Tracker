@@ -6,6 +6,13 @@ All notable changes to this mod are documented here. Versions correspond to the
 test run if any of them, or the newest heading below, falls out of step.
 
 ## [1.0.11]
+### Fixed
+- Fixed the collection tracker on the map not ringing a pearl lying in the
+  shelter with you — only one held or swallowed. The sleep screen counts the
+  shelter's contents, and this now does too, which is what the ring has always
+  been documented to mean. Shelters only: in any other room, ringing a pearl
+  because you happened to walk past it would leave the ring meaning nothing.
+
 ### Changed
 - The collection tracker no longer asks whether every pearl has been read forty
   times a second. `IsPearlRead` checks whether a conversation file exists on the
