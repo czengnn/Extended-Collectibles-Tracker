@@ -19,8 +19,15 @@ One Remix toggle each:
 - **Reveal Whole Rooms** — a room appears complete when you enter it, not just where you
   walked.
 
-Always on: a dot per pearl per region on the sleep screen — filled once deciphered, ringed
-while it's with you — and the region's progress on the fast travel screen.
+Always on: a dot per pearl per region on the sleep screen — and the region's progress on
+the fast travel screen.
+
+## What the symbols mean
+
+- **Map marker** — empty and pulsing while something's left to do, solid once it isn't.
+- **Tracker dot** — empty until collected or deciphered, filled after.
+- **Ring around a dot** — that pearl is on you: held, swallowed, or in the shelter.
+- Everything is drawn in its own collectible's colour.
 
 ## What this fork fixes
 
