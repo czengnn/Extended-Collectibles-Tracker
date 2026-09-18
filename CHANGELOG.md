@@ -5,6 +5,16 @@ All notable changes to this mod are documented here. Versions correspond to the
 `Plugin.VERSION` and `<Version>` in the csproj; `VersionConsistencyTests` fails the
 test run if any of them, or the newest heading below, falls out of step.
 
+## [1.0.11]
+### Added
+- Optional whole room reveal, off by default: a room appears on the map complete
+  as soon as you enter it, instead of uncovering only the patch you walk through.
+  Toggle it with "Reveal Whole Rooms" in the Remix options, next to Instant Map.
+  It fills the room's footprint in the map's own discovery texture, the way
+  vanilla rebuilds discovery from the rooms a save says you have visited, and
+  queues those pixels on the map's reveal list so they are drawn rather than
+  merely known.
+
 ## [1.0.10]
 ### Added
 - Optional collection tracker on the map, off by default: the sleep screen's grid,

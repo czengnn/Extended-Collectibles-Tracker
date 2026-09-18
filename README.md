@@ -23,8 +23,11 @@ alongside the original rather than replacing it — enable only one.
 - **Room names** — optional labels above each room the map is showing.
 - **Instant map** — optional; opens and closes with the button, everything you've explored
   already shown.
-- **In Remix options** — five separate toggles: **Show Map Markers**, **Show Room Glow**,
-  **Show Room Names**, **Show Collection Tracker** and **Instant Map**.
+- **Reveal whole rooms** — optional; a room appears complete the moment you enter it,
+  rather than uncovering only where you walked.
+- **In Remix options** — six separate toggles: **Show Map Markers**, **Show Room Glow**,
+  **Show Room Names**, **Show Collection Tracker**, **Instant Map** and **Reveal Whole
+  Rooms**.
 
 ## What this fork fixes
 

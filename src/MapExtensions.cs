@@ -17,6 +17,7 @@ namespace ExtendedCollectiblesTracker {
 			public CollectiblesPanel collectiblesPanel;
 			public int counter;
 			public bool mapWasOpen;
+			public int lastRevealedRoom = -1;
 		}
 
 		const int CollectibleRefreshInterval = 40;
@@ -132,6 +133,8 @@ namespace ExtendedCollectiblesTracker {
 			Extension extendedSelf = self.GetExtension();
 			extendedSelf.counter++;
 
+			RevealRoomEntered(self, extendedSelf);
+
 			// re-resolve pearl locations and token/broadcast collected state periodically so
 			// markers follow pearls relocated after the map was built (e.g. carried to a
 			// shelter) and fill in as soon as a token is collected, instead of only updating
@@ -162,6 +165,26 @@ namespace ExtendedCollectiblesTracker {
 			foreach (var roomLabel in extendedSelf.roomLabels) {
 				roomLabel.Draw(self, timeStacker, show);
 			}
+		}
+
+		// Once per room entered rather than every tick: filling a room is cheap, but it walks the
+		// room's pixels and applies the texture, which is not worth repeating while you stand still.
+		// The map keeps discovering around you as you walk either way, so a room you enter before
+		// this can run - while the discover texture is still loading - is not left blank.
+		static void RevealRoomEntered(Map self, Extension extendedSelf) {
+			if (!Options.revealWholeRoom.Value || !self.discLoaded ||
+				self.hud.owner.GetOwnerType() != HUD.HUD.OwnerType.Player
+			) {
+				return;
+			}
+
+			int room = self.hud.owner.MapOwnerRoom;
+			if (room == extendedSelf.lastRevealedRoom) {
+				return;
+			}
+
+			extendedSelf.lastRevealedRoom = room;
+			RoomReveal.RevealRoom(self, room);
 		}
 
 		// Label a room once the map is actually drawing it, which is what the discover texture

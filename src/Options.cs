@@ -25,6 +25,10 @@ namespace ExtendedCollectiblesTracker {
 			"Open the map instantly with everything already explored shown, instead of waiting for it to fade in and reveal itself.",
 			tags: "Instant Map"));
 
+		public static Configurable<bool> revealWholeRoom = instance.config.Bind("revealWholeRoom", false, new ConfigurableInfo(
+			"Reveal a room's whole shape on the map as soon as you enter it, not just the parts you walk past.",
+			tags: "Reveal Whole Rooms"));
+
 		public override void Initialize() {
 			base.Initialize();
 
@@ -57,6 +61,11 @@ namespace ExtendedCollectiblesTracker {
 			position.y -= 40;
 			checkBox = new OpCheckBox(instantMap, position) {description = instantMap.info.description};
 			label = new OpLabel(position.x + 30, position.y + 3, instantMap.info.Tags[0] as string) {description = instantMap.info.description};
+			Tabs[0].AddItems(new UIelement[] { checkBox, label });
+
+			position.y -= 40;
+			checkBox = new OpCheckBox(revealWholeRoom, position) {description = revealWholeRoom.info.description};
+			label = new OpLabel(position.x + 30, position.y + 3, revealWholeRoom.info.Tags[0] as string) {description = revealWholeRoom.info.description};
 			Tabs[0].AddItems(new UIelement[] { checkBox, label });
 		}
 	}
