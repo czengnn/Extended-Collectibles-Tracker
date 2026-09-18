@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 using HUD;
 using MoreSlugcats;
@@ -47,6 +48,7 @@ namespace ExtendedCollectiblesTracker {
 			PlayerProgression.MiscProgressionData progress = rainWorld.progression.miscProgressionData;
 
 			foreach (string region in VisitedStoryRegions(slugcat)) {
+				int cellsBefore = cells.Count;
 				float row = 0f;
 
 				foreach (Cell token in TokensOfRegion(region, slugcat, progress)) {
@@ -68,7 +70,8 @@ namespace ExtendedCollectiblesTracker {
 					}
 				}
 
-				if (row > 0f) {
+				// a region with nothing to collect gets no column rather than a blank gap
+				if (cells.Count > cellsBefore) {
 					columnCount++;
 				}
 			}
@@ -85,24 +88,44 @@ namespace ExtendedCollectiblesTracker {
 			cells.Add(cell);
 		}
 
+		// A region only has a RegionState while it is loaded - the one you are standing in. Every
+		// other region you have been to is still sitting in regionLoadStrings, saved but not
+		// parsed, so looking at regionStates alone finds exactly one region and draws one column.
+		// Vanilla reads both, and the region's name is the second field of the load string's first
+		// chunk.
 		List<string> VisitedStoryRegions(SlugcatStats.Name slugcat) {
-			List<string> visited = new();
+			HashSet<string> visited = new(StringComparer.InvariantCultureIgnoreCase);
 			SaveState saveState = rainWorld.progression.currentSaveState;
-			if (saveState?.regionStates == null) {
-				return visited;
-			}
 
-			foreach (string region in SlugcatStats.SlugcatStoryRegions(slugcat)) {
-				string lower = region.ToLowerInvariant();
+			if (saveState?.regionStates != null) {
 				foreach (RegionState regionState in saveState.regionStates) {
-					if (regionState != null && string.Equals(regionState.regionName, region, StringComparison.InvariantCultureIgnoreCase)) {
-						visited.Add(lower);
-						break;
+					if (regionState?.regionName != null) {
+						visited.Add(regionState.regionName);
 					}
 				}
 			}
 
-			return visited;
+			if (saveState?.regionLoadStrings != null) {
+				foreach (string loadString in saveState.regionLoadStrings) {
+					if (string.IsNullOrEmpty(loadString)) {
+						continue;
+					}
+
+					string[] fields = Regex.Split(Regex.Split(loadString, "<rgA>")[0], "<rgB>");
+					if (fields.Length > 1 && !string.IsNullOrEmpty(fields[1])) {
+						visited.Add(fields[1]);
+					}
+				}
+			}
+
+			List<string> regions = new();
+			foreach (string region in SlugcatStats.SlugcatStoryRegions(slugcat)) {
+				if (visited.Contains(region)) {
+					regions.Add(region.ToLowerInvariant());
+				}
+			}
+
+			return regions;
 		}
 
 		// Same tokens vanilla's own grid counts, filtered the same way: a token only belongs to a

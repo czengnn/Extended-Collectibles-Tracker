@@ -17,9 +17,9 @@ namespace ExtendedCollectiblesTracker {
 			"Show each room's name on the map, just above every room the map is showing.",
 			tags: "Show Room Names"));
 
-		public static Configurable<bool> showCollectiblesOnMap = instance.config.Bind("showCollectiblesOnMap", false, new ConfigurableInfo(
-			"Show the sleep screen's collectible tracker in the top right while the map is open.",
-			tags: "Collectibles On Map"));
+		public static Configurable<bool> showProgressPanel = instance.config.Bind("showProgressPanel", false, new ConfigurableInfo(
+			"Show how many tokens and pearls you have found in each region, in the top right while the map is open.",
+			tags: "Region Progress"));
 
 		public static Configurable<bool> instantMap = instance.config.Bind("instantMap", false, new ConfigurableInfo(
 			"Open the map instantly with everything already explored shown, instead of waiting for it to fade in and reveal itself.",
@@ -50,8 +50,8 @@ namespace ExtendedCollectiblesTracker {
 			Tabs[0].AddItems(new UIelement[] { checkBox, label });
 
 			position.y -= 40;
-			checkBox = new OpCheckBox(showCollectiblesOnMap, position) {description = showCollectiblesOnMap.info.description};
-			label = new OpLabel(position.x + 30, position.y + 3, showCollectiblesOnMap.info.Tags[0] as string) {description = showCollectiblesOnMap.info.description};
+			checkBox = new OpCheckBox(showProgressPanel, position) {description = showProgressPanel.info.description};
+			label = new OpLabel(position.x + 30, position.y + 3, showProgressPanel.info.Tags[0] as string) {description = showProgressPanel.info.description};
 			Tabs[0].AddItems(new UIelement[] { checkBox, label });
 
 			position.y -= 40;

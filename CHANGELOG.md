@@ -7,9 +7,9 @@ test run if any of them, or the newest heading below, falls out of step.
 
 ## [1.0.10]
 ### Added
-- Optional collectibles panel on the map, off by default: the sleep screen's
-  grid, drawn in the top right while you hold the map and fading with it. Toggle
-  it with "Collectibles On Map" in the Remix options. Vanilla's own tracker can't
+- Optional region progress panel, off by default: how many tokens and pearls you
+  have found in each region, drawn in the top right while you hold the map and
+  fading with it. Toggle it with "Region Progress" in the Remix options. Vanilla's own tracker can't
   be reused for this — it's a `PositionedMenuObject` that needs a `Menu`, and
   there isn't one in a running game — but the data behind it is all public, and
   in a running game what you're carrying is simply your hands and your stomach
