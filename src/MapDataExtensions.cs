@@ -41,7 +41,11 @@ namespace ExtendedCollectiblesTracker {
 
 		// Saved positions are in tiles; markers are placed in the room's own coordinates.
 		static Vector2 TileToInRoomPos(WorldCoordinate pos) {
-			return new Vector2(pos.x * 20f, pos.y * 20f);
+			return new Vector2(TilePosition.Centre(pos.x), TilePosition.Centre(pos.y));
+		}
+
+		static bool IsUsable(WorldCoordinate pos) {
+			return TilePosition.IsUsable(pos.room, pos.x, pos.y);
 		}
 
 		// Misc pearls aren't tracked, and neither are pearls that come back from a save string
@@ -208,8 +212,10 @@ namespace ExtendedCollectiblesTracker {
 						continue;
 
 					WorldCoordinate savedPos = abstractPhysicalObject.pos;
-					RelocatePearl(extendedSelf, rainWorld, pearlType,
-						savedPos.room, TileToInRoomPos(savedPos));
+					if (IsUsable(savedPos)) {
+						RelocatePearl(extendedSelf, rainWorld, pearlType,
+							savedPos.room, TileToInRoomPos(savedPos));
+					}
 				}
 			}
 
@@ -240,19 +246,27 @@ namespace ExtendedCollectiblesTracker {
 					if (realizedPearl?.firstChunk != null) {
 						RelocatePearl(extendedSelf, rainWorld, pearlType,
 							trackedObject.obj.pos.room, realizedPearl.firstChunk.pos);
-					} else if (trackedObject.obj != null) {
-						// Not realized right now - e.g. swallowed, so it has no body of its own -
-						// but the abstract object is still tracked, and the game keeps its abstract
-						// position in sync with whatever's carrying it. desiredSpawnLocation is only
-						// where it would respawn if abandoned, and goes stale while it's swallowed
-						// rather than held, since a swallowed item never re-realizes to update it.
-						WorldCoordinate abstractPos = trackedObject.obj.pos;
+						continue;
+					}
+
+					// No body to ask, so the best that's left is an abstract tile. Take them in
+					// order of how much they know about where the pearl actually is: the live
+					// abstract object stays in step with whatever is carrying it, the saved
+					// representation records where it last was, and desiredSpawnLocation is only
+					// where it would reappear if abandoned. That last one is also the one that
+					// lies - it reads (-1, 0) until the game works a spawn out, which put the
+					// marker a tile off the room's corner, nowhere near the pearl.
+					WorldCoordinate abstractPos = trackedObject.obj?.pos ?? default;
+					if (!IsUsable(abstractPos)) {
+						abstractPos = trackedPhysicalObject.pos;
+					}
+					if (!IsUsable(abstractPos)) {
+						abstractPos = trackedObject.desiredSpawnLocation;
+					}
+
+					if (IsUsable(abstractPos)) {
 						RelocatePearl(extendedSelf, rainWorld, pearlType,
 							abstractPos.room, TileToInRoomPos(abstractPos));
-					} else {
-						WorldCoordinate spawnPos = trackedObject.desiredSpawnLocation;
-						RelocatePearl(extendedSelf, rainWorld, pearlType,
-							spawnPos.room, TileToInRoomPos(spawnPos));
 					}
 				}
 			}

@@ -28,6 +28,16 @@ test run if any of them, or the newest heading below, falls out of step.
   towards passage progress.
 
 ### Fixed
+- Fixed a pearl's map marker sitting well away from the pearl — often just
+  outside the room — while the game's own key item marker had it right. A
+  tracker's `desiredSpawnLocation` is where the item would reappear if
+  abandoned, not where it is, and it reads `(-1, 0)` until the game works one
+  out; taken literally that draws the marker a tile off the room's corner. The
+  abstract positions are now tried in order of how much they know — the live
+  object, then the saved representation, then the spawn location — and a
+  coordinate that isn't a real tile is ignored rather than drawn. Markers placed
+  from a tile now also sit in the middle of it, as the game's own do, instead of
+  its corner.
 - Fixed a pearl held in your hands as you slept not counting as being in the
   shelter with you. Swallowed pearls and pearls left on the shelter floor were
   both found, but the save keeps what you were holding in `playerGrasps`, apart
