@@ -39,6 +39,8 @@ the fast travel screen.
 - A pearl collecting a duplicate marker a few times a second, until the pile froze the map.
 - Markers for pearls with no type, pointing at pearls that aren't there.
 - Markers sitting where a pearl used to be, or a room away from where it is.
+- A swallowed pearl's marker staying where you ate it until the next hibernation.
+- A pearl carried in from another region, or swallowed, having no marker at all.
 - Pearl and token markers going stale until the next hibernation.
 - A pearl in your hands as you slept not counting as being in the shelter with you.
 - Instant Map revealing itself gradually the first time it opened in a region.

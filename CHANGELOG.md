@@ -5,7 +5,7 @@ All notable changes to this mod are documented here. Versions correspond to the
 `Plugin.VERSION` and `<Version>` in the csproj; `VersionConsistencyTests` fails the
 test run if any of them, or the newest heading below, falls out of step.
 
-## [Unreleased]
+## [1.0.12]
 ### Fixed
 - Fixed a collectible that became known to the map after the map was built having
   no marker at all. Markers were only ever created alongside the map, so a pearl
