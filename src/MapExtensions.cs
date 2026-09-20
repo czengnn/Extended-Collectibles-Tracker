@@ -179,7 +179,10 @@ namespace ExtendedCollectiblesTracker {
 		static void AddMarkersForNewCollectibles(Map self, Extension extendedSelf) {
 			var collectibleData = self.mapData.GetExtension().collectibleData;
 
-			for (int i = extendedSelf.markersCreated; i < collectibleData.Count; i++) {
+			for (int i = LateMarkers.FirstUndrawnIndex(collectibleData.Count, extendedSelf.markersCreated);
+				i < collectibleData.Count;
+				i++
+			) {
 				CollectibleMarker marker = new CollectibleMarker(self, collectibleData[i]);
 				self.mapObjects.Add(marker);
 
@@ -187,9 +190,8 @@ namespace ExtendedCollectiblesTracker {
 				// the reveal reaches them. A marker built later has missed that pass, and
 				// ResetNotRevealedMarkers can't be used to catch it up - that one hides every
 				// marker again, and a marker whose pixel is already revealed would never be
-				// revealed a second time to bring it back. So: fade it in if the map is already
-				// showing where it is, and queue it like any other if it isn't.
-				if (IsSpotRevealed(self, collectibleData[i])) {
+				// revealed a second time to bring it back. See Core.LateMarkers.
+				if (LateMarkers.HowToShow(IsSpotRevealed(self, collectibleData[i])) == LateMarkerReveal.FadeInNow) {
 					marker.FadeIn(30f);
 				} else {
 					marker.SetInvisible();
