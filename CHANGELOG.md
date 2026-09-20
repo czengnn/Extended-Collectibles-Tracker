@@ -5,6 +5,17 @@ All notable changes to this mod are documented here. Versions correspond to the
 `Plugin.VERSION` and `<Version>` in the csproj; `VersionConsistencyTests` fails the
 test run if any of them, or the newest heading below, falls out of step.
 
+## [Unreleased]
+### Fixed
+- Fixed a swallowed pearl's map marker staying where you ate it, and keeping
+  whatever read state it had at the time, until the next hibernation rebuilt the
+  map. Swallowing a pearl throws its tracker away — `Player.SwallowObject` calls
+  `RemovePersistentTracker`, which takes it out of `objectTrackers` — and it
+  isn't among the region's saved objects either, since it isn't in a room, so
+  neither place the refresh looks knew anything about it. The slugcat's stomach
+  is now asked directly, last, so it wins over wherever the save last saw the
+  pearl.
+
 ## [1.0.11]
 ### Fixed
 - Fixed the collection tracker on the map not ringing a pearl lying in the

@@ -187,6 +187,49 @@ namespace ExtendedCollectiblesTracker {
 		public static void LocatePearls(this Map.MapData self, RainWorld rainWorld) {
 			Extension extendedSelf = self.GetExtension();
 
+			LocateSavedPearls(self, extendedSelf, rainWorld);
+
+			// Last, so it wins: a swallowed pearl is somewhere the save still thinks it left it,
+			// and the slugcat knows better.
+			LocateSwallowedPearls(extendedSelf, rainWorld);
+		}
+
+		// A pearl in a slugcat's stomach is in none of the places above. Swallowing one throws its
+		// tracker away - Player.SwallowObject calls RemovePersistentTracker, which takes it out of
+		// objectTrackers altogether - and it isn't among the region's saved objects either, since
+		// it isn't in a room. So nothing refreshed its marker: it sat where the pearl was eaten,
+		// still showing whatever read state it had at the time, until hibernation rebuilt the map
+		// from scratch. Asking the slugcat is the only way to know.
+		static void LocateSwallowedPearls(Extension extendedSelf, RainWorld rainWorld) {
+			if (rainWorld.processManager.currentMainLoop is not RainWorldGame game || game.Players == null) {
+				return;
+			}
+
+			foreach (AbstractCreature abstractPlayer in game.Players) {
+				if (abstractPlayer?.realizedCreature is not Player player) {
+					continue;
+				}
+
+				if (player.objectInStomach is not DataPearl.AbstractDataPearl swallowedPearl) {
+					continue;
+				}
+
+				var pearlType = swallowedPearl.dataPearlType;
+				if (!IsTrackablePearl(pearlType)) {
+					continue;
+				}
+
+				if (player.firstChunk != null && IsUsable(abstractPlayer.pos)) {
+					RelocatePearl(extendedSelf, rainWorld, pearlType,
+						abstractPlayer.pos.room, player.firstChunk.pos);
+				} else if (IsUsable(abstractPlayer.pos)) {
+					RelocatePearl(extendedSelf, rainWorld, pearlType,
+						abstractPlayer.pos.room, TileToInRoomPos(abstractPlayer.pos));
+				}
+			}
+		}
+
+		static void LocateSavedPearls(Map.MapData self, Extension extendedSelf, RainWorld rainWorld) {
 			if (!rainWorld.progression.IsThereASavedGame(rainWorld.progression.PlayingAsSlugcat) ||
 				rainWorld.progression.currentSaveState == null
 			) {
