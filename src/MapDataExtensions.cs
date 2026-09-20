@@ -191,7 +191,7 @@ namespace ExtendedCollectiblesTracker {
 
 			// Last, so it wins: a swallowed pearl is somewhere the save still thinks it left it,
 			// and the slugcat knows better.
-			LocateSwallowedPearls(extendedSelf, rainWorld);
+			LocateSwallowedPearls(self, extendedSelf, rainWorld);
 		}
 
 		// A pearl in a slugcat's stomach is in none of the places above. Swallowing one throws its
@@ -200,7 +200,9 @@ namespace ExtendedCollectiblesTracker {
 		// it isn't in a room. So nothing refreshed its marker: it sat where the pearl was eaten,
 		// still showing whatever read state it had at the time, until hibernation rebuilt the map
 		// from scratch. Asking the slugcat is the only way to know.
-		static void LocateSwallowedPearls(Extension extendedSelf, RainWorld rainWorld) {
+		static void LocateSwallowedPearls(Map.MapData self, Extension extendedSelf, RainWorld rainWorld) {
+			// Only while a game is running: the fast travel screen builds map data for whichever
+			// region you are browsing, and a pearl in your stomach says nothing about that region.
 			if (rainWorld.processManager.currentMainLoop is not RainWorldGame game || game.Players == null) {
 				return;
 			}
@@ -219,13 +221,15 @@ namespace ExtendedCollectiblesTracker {
 					continue;
 				}
 
-				if (player.firstChunk != null && IsUsable(abstractPlayer.pos)) {
-					RelocatePearl(extendedSelf, rainWorld, pearlType,
-						abstractPlayer.pos.room, player.firstChunk.pos);
-				} else if (IsUsable(abstractPlayer.pos)) {
-					RelocatePearl(extendedSelf, rainWorld, pearlType,
-						abstractPlayer.pos.room, TileToInRoomPos(abstractPlayer.pos));
+				// And only into a room this map has: SizeOfRoom returns nothing for a room outside
+				// it, which is the same check RoomReveal makes before touching a room.
+				WorldCoordinate playerPos = abstractPlayer.pos;
+				if (!IsUsable(playerPos) || self.SizeOfRoom(playerPos.room).x <= 0) {
+					continue;
 				}
+
+				RelocatePearl(extendedSelf, rainWorld, pearlType, playerPos.room,
+					player.firstChunk != null ? player.firstChunk.pos : TileToInRoomPos(playerPos));
 			}
 		}
 

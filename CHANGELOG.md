@@ -7,6 +7,14 @@ test run if any of them, or the newest heading below, falls out of step.
 
 ## [Unreleased]
 ### Fixed
+- Fixed a collectible that became known to the map after the map was built having
+  no marker at all. Markers were only ever created alongside the map, so a pearl
+  carried in from another region — or swallowed, which drops it out of the save's
+  trackers entirely — got an entry that nothing drew. Such a marker now fades in
+  if the map already shows where it is, and is queued for the reveal like any
+  other if it doesn't; `ResetNotRevealedMarkers` can't be used to catch one up,
+  since it hides every marker again and an already-revealed pixel is never
+  revealed a second time to bring them back.
 - Fixed a swallowed pearl's map marker staying where you ate it, and keeping
   whatever read state it had at the time, until the next hibernation rebuilt the
   map. Swallowing a pearl throws its tracker away — `Player.SwallowObject` calls
