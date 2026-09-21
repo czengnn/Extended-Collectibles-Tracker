@@ -187,6 +187,53 @@ namespace ExtendedCollectiblesTracker {
 		public static void LocatePearls(this Map.MapData self, RainWorld rainWorld) {
 			Extension extendedSelf = self.GetExtension();
 
+			LocateSavedPearls(self, extendedSelf, rainWorld);
+
+			// Last, so it wins: a swallowed pearl is somewhere the save still thinks it left it,
+			// and the slugcat knows better.
+			LocateSwallowedPearls(self, extendedSelf, rainWorld);
+		}
+
+		// A pearl in a slugcat's stomach is in none of the places above. Swallowing one throws its
+		// tracker away - Player.SwallowObject calls RemovePersistentTracker, which takes it out of
+		// objectTrackers altogether - and it isn't among the region's saved objects either, since
+		// it isn't in a room. So nothing refreshed its marker: it sat where the pearl was eaten,
+		// still showing whatever read state it had at the time, until hibernation rebuilt the map
+		// from scratch. Asking the slugcat is the only way to know.
+		static void LocateSwallowedPearls(Map.MapData self, Extension extendedSelf, RainWorld rainWorld) {
+			// Only while a game is running: the fast travel screen builds map data for whichever
+			// region you are browsing, and a pearl in your stomach says nothing about that region.
+			if (rainWorld.processManager.currentMainLoop is not RainWorldGame game || game.Players == null) {
+				return;
+			}
+
+			foreach (AbstractCreature abstractPlayer in game.Players) {
+				if (abstractPlayer?.realizedCreature is not Player player) {
+					continue;
+				}
+
+				if (player.objectInStomach is not DataPearl.AbstractDataPearl swallowedPearl) {
+					continue;
+				}
+
+				var pearlType = swallowedPearl.dataPearlType;
+				if (!IsTrackablePearl(pearlType)) {
+					continue;
+				}
+
+				// And only into a room this map has: SizeOfRoom returns nothing for a room outside
+				// it, which is the same check RoomReveal makes before touching a room.
+				WorldCoordinate playerPos = abstractPlayer.pos;
+				if (!IsUsable(playerPos) || self.SizeOfRoom(playerPos.room).x <= 0) {
+					continue;
+				}
+
+				RelocatePearl(extendedSelf, rainWorld, pearlType, playerPos.room,
+					player.firstChunk != null ? player.firstChunk.pos : TileToInRoomPos(playerPos));
+			}
+		}
+
+		static void LocateSavedPearls(Map.MapData self, Extension extendedSelf, RainWorld rainWorld) {
 			if (!rainWorld.progression.IsThereASavedGame(rainWorld.progression.PlayingAsSlugcat) ||
 				rainWorld.progression.currentSaveState == null
 			) {

@@ -14,6 +14,9 @@ namespace ExtendedCollectiblesTracker {
 		public class Extension {
 			public List<RoomNameLabel> roomLabels = new();
 			public CollectiblesPanel collectiblesPanel;
+			// how many collectibles already have a marker; the list only ever grows, so anything
+			// past this came along after the map was built
+			public int markersCreated;
 			public int counter;
 			public bool mapWasOpen;
 			public int lastRevealedRoom = -1;
@@ -39,6 +42,7 @@ namespace ExtendedCollectiblesTracker {
 			}
 
 			self.ResetNotRevealedMarkers();
+			self.GetExtension().markersCreated = extendedMapData.collectibleData.Count;
 
 			// Room labels are kept out of mapObjects on purpose, and so are built after
 			// ResetNotRevealedMarkers: see RoomNameLabel for why they must not be markers.
@@ -141,6 +145,7 @@ namespace ExtendedCollectiblesTracker {
 			if (MapRefresh.ShouldRefresh(extendedSelf.counter, CollectibleRefreshInterval)) {
 				self.mapData.LocatePearls(self.hud.rainWorld);
 				self.mapData.RefreshTokens();
+				AddMarkersForNewCollectibles(self, extendedSelf);
 				RefreshShownRooms(self);
 				extendedSelf.collectiblesPanel?.RefreshProgress(self);
 			}
@@ -165,6 +170,53 @@ namespace ExtendedCollectiblesTracker {
 			foreach (var roomLabel in extendedSelf.roomLabels) {
 				roomLabel.Draw(self, timeStacker, show);
 			}
+		}
+
+		// A pearl can become known to the map after the map was built - carried in from another
+		// region, or swallowed, which drops it out of the save's trackers entirely. LocatePearls
+		// adds an entry for it, but markers were only ever created alongside the map, so that
+		// entry had nothing drawing it.
+		static void AddMarkersForNewCollectibles(Map self, Extension extendedSelf) {
+			var collectibleData = self.mapData.GetExtension().collectibleData;
+
+			for (int i = LateMarkers.FirstUndrawnIndex(collectibleData.Count, extendedSelf.markersCreated);
+				i < collectibleData.Count;
+				i++
+			) {
+				CollectibleMarker marker = new CollectibleMarker(self, collectibleData[i]);
+				self.mapObjects.Add(marker);
+
+				// Markers built with the map are queued in notRevealedFadeMarkers and faded in as
+				// the reveal reaches them. A marker built later has missed that pass, and
+				// ResetNotRevealedMarkers can't be used to catch it up - that one hides every
+				// marker again, and a marker whose pixel is already revealed would never be
+				// revealed a second time to bring it back. See Core.LateMarkers.
+				if (LateMarkers.HowToShow(IsSpotRevealed(self, collectibleData[i])) == LateMarkerReveal.FadeInNow) {
+					marker.FadeIn(30f);
+				} else {
+					marker.SetInvisible();
+					self.notRevealedFadeMarkers.Add(marker);
+				}
+			}
+
+			extendedSelf.markersCreated = collectibleData.Count;
+		}
+
+		static bool IsSpotRevealed(Map self, MapDataExtensions.Extension.CollectibleData collectibleData) {
+			if (self.revealTexture == null) {
+				return false;
+			}
+
+			IntVector2 texturePos = IntVector2.FromVector2(
+				self.OnTexturePos(collectibleData.pos, collectibleData.room, accountForLayer: true) / self.DiscoverResolution);
+
+			if (texturePos.x < 0 || texturePos.y < 0 ||
+				texturePos.x >= self.revealTexture.width || texturePos.y >= self.revealTexture.height
+			) {
+				return false;
+			}
+
+			return self.revealTexture.GetPixel(texturePos.x, texturePos.y).r > 0f;
 		}
 
 		// The map takes its own sprites out of the container here; ours live in the same container

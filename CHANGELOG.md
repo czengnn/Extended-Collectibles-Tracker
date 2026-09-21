@@ -5,6 +5,25 @@ All notable changes to this mod are documented here. Versions correspond to the
 `Plugin.VERSION` and `<Version>` in the csproj; `VersionConsistencyTests` fails the
 test run if any of them, or the newest heading below, falls out of step.
 
+## [1.0.12]
+### Fixed
+- Fixed a collectible that became known to the map after the map was built having
+  no marker at all. Markers were only ever created alongside the map, so a pearl
+  carried in from another region — or swallowed, which drops it out of the save's
+  trackers entirely — got an entry that nothing drew. Such a marker now fades in
+  if the map already shows where it is, and is queued for the reveal like any
+  other if it doesn't; `ResetNotRevealedMarkers` can't be used to catch one up,
+  since it hides every marker again and an already-revealed pixel is never
+  revealed a second time to bring them back.
+- Fixed a swallowed pearl's map marker staying where you ate it, and keeping
+  whatever read state it had at the time, until the next hibernation rebuilt the
+  map. Swallowing a pearl throws its tracker away — `Player.SwallowObject` calls
+  `RemovePersistentTracker`, which takes it out of `objectTrackers` — and it
+  isn't among the region's saved objects either, since it isn't in a room, so
+  neither place the refresh looks knew anything about it. The slugcat's stomach
+  is now asked directly, last, so it wins over wherever the save last saw the
+  pearl.
+
 ## [1.0.11]
 ### Fixed
 - Fixed the collection tracker on the map not ringing a pearl lying in the
