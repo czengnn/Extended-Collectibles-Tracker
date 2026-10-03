@@ -43,33 +43,6 @@ namespace ExtendedCollectiblesTracker.Core {
 			return true;
 		}
 
-		// A read is a read once the reader has played everything the pearl holds. Its dialogue is
-		// left out entirely until the Watcher has the Mark, so a pearl with dialogue played before
-		// then has not been read yet; a pearl of images and sound has, Mark or not.
-		public static bool CountsAsRead(bool canUnderstandDialog, bool hasDialog) {
-			return canUnderstandDialog || !hasDialog;
-		}
-
-		// Whether a pearl's content has dialogue, from the blocks PearlContent.LoadPearlProperties
-		// splits its file into. A block's first line names its element before a colon, read the
-		// way PearlContent.GetConcreteElement reads it; these are the types it drops without the Mark.
-		public static bool HasDialog(IEnumerable<string> properties) {
-			if (properties == null) {
-				return false;
-			}
-			foreach (string block in properties) {
-				string[] lines = block?.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-				if (lines == null || lines.Length == 0) {
-					continue;
-				}
-				string type = lines[0].Split(':')[0].ToLowerInvariant();
-				if (type == "dialog" || type == "conversation" || type == "convo") {
-					return true;
-				}
-			}
-			return false;
-		}
-
 		static List<string> Read(IList<string> saveStrings) {
 			var pearls = new List<string>();
 			int index = IndexOfEntry(saveStrings);
