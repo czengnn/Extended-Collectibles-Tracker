@@ -5,7 +5,7 @@ All notable changes to this mod are documented here. Versions correspond to the
 `Plugin.VERSION` and `<Version>` in the csproj; `VersionConsistencyTests` fails the
 test run if any of them, or the newest heading below, falls out of step.
 
-## [1.0.12]
+## [1.0.13]
 ### Fixed
 - Fixed pearls read on the Watcher campaign never showing as read: hollow on the
   sleep screen and the map's tracker, and their map markers pulsing as if never
@@ -18,6 +18,9 @@ test run if any of them, or the newest heading below, falls out of step.
   counts once the Watcher has the Mark, since the reader leaves the dialogue out
   until then. Pearls read before this version weren't recorded anywhere and need
   reading again.
+
+## [1.0.12]
+### Fixed
 - Fixed a collectible that became known to the map after the map was built having
   no marker at all. Markers were only ever created alongside the map, so a pearl
   carried in from another region — or swallowed, which drops it out of the save's
