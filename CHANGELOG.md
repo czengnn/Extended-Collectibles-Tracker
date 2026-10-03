@@ -5,6 +5,20 @@ All notable changes to this mod are documented here. Versions correspond to the
 `Plugin.VERSION` and `<Version>` in the csproj; `VersionConsistencyTests` fails the
 test run if any of them, or the newest heading below, falls out of step.
 
+## [1.0.13]
+### Fixed
+- Fixed pearls read on the Watcher campaign never showing as read: hollow on the
+  sleep screen and the map's tracker, and their map markers pulsing as if never
+  read. Every other campaign has an iterator read a pearl and the game keeps a
+  deciphered list for it; the Watcher reads them at Ancient Urban's pearl reader,
+  which records nothing, so the Watcher was checked against the list Moon fills
+  — showing as read only what Moon had read on another campaign. The mod now
+  records a pearl once the reader plays it, in the misc progression data under
+  its own key, and the Watcher campaign checks only that. A pearl with dialogue
+  counts once the Watcher has the Mark, since the reader leaves the dialogue out
+  until then. Pearls read before this version weren't recorded anywhere and need
+  reading again.
+
 ## [1.0.12]
 ### Fixed
 - Fixed a collectible that became known to the map after the map was built having

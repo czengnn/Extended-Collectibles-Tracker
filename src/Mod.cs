@@ -39,6 +39,8 @@ namespace ExtendedCollectiblesTracker {
 			On.SaveState.LoadGame += SaveState_LoadGame_HK;
 			On.RegionState.AdaptRegionStateToWorld += RegionState_AdaptRegionStateToWorld_HK;
 
+			On.Watcher.PearlReader.LoadPearl += PearlReader_LoadPearl_HK;
+
 			MachineConnector.SetRegisteredOI(Plugin.GUID, Options.instance);
 		}
 
@@ -98,6 +100,11 @@ namespace ExtendedCollectiblesTracker {
 			RunSafely(() => CollectiblesTrackerExtension.presavePendingObjects = new List<string>(self.saveState?.pendingObjects ?? new List<string>()));
 		}
 
+		static void PearlReader_LoadPearl_HK(On.Watcher.PearlReader.orig_LoadPearl orig, Watcher.PearlReader self) {
+			orig(self);
+			RunSafely(() => WatcherPearlReading.PearlLoaded(self));
+		}
+
 		// Extension code runs after the vanilla behavior (orig) already completed, so any exception
 		// here must never be allowed to bubble up into the game's hook chain: since the vanilla
 		// screen/menu construction already finished, an uncaught exception at this point only ever
@@ -117,7 +124,11 @@ namespace ExtendedCollectiblesTracker {
 		public static bool IsPearlRead(RainWorld rainWorld, DataPearl.AbstractDataPearl.DataPearlType pearlType) {
 			SlugcatStats.Name slugcat = rainWorld.progression.PlayingAsSlugcat;
 			bool pearlRead;
-			if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Spear && Conversation.EventsFileExists(rainWorld, CollectionsMenu.DataPearlToFileID(pearlType), MoreSlugcatsEnums.SlugcatStatsName.Spear)) {
+			// No iterator reads a pearl on the Watcher campaign, so none of the game's deciphered
+			// lists applies - the plain one in particular would show what Moon read for Survivor.
+			if (WatcherPearlReading.IsWatcher(slugcat)) {
+				pearlRead = WatcherPearlReading.IsRead(rainWorld, pearlType);
+			} else if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Spear && Conversation.EventsFileExists(rainWorld, CollectionsMenu.DataPearlToFileID(pearlType), MoreSlugcatsEnums.SlugcatStatsName.Spear)) {
 				pearlRead = rainWorld.progression.miscProgressionData.GetDMPearlDeciphered(pearlType);
 			} else if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Artificer && Conversation.EventsFileExists(rainWorld, CollectionsMenu.DataPearlToFileID(pearlType), MoreSlugcatsEnums.SlugcatStatsName.Artificer)) {
 				pearlRead = rainWorld.progression.miscProgressionData.GetPebblesPearlDeciphered(pearlType);
