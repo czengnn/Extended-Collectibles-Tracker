@@ -5,6 +5,17 @@ All notable changes to this mod are documented here. Versions correspond to the
 `Plugin.VERSION` and `<Version>` in the csproj; `VersionConsistencyTests` fails the
 test run if any of them, or the newest heading below, falls out of step.
 
+## [1.0.14]
+### Fixed
+- Fixed the Watcher's text pearls never showing as read, however often the pearl
+  reader played them. 1.0.13 only counted a pearl with dialogue once the Watcher
+  had the Mark, since the reader leaves the spoken dialogue out until then — but
+  it still plays the pearl's images, sound and text, and the Prince gives the
+  Mark near the end of the campaign, so those pearls stayed unread for most of
+  it with nothing to say they had to be read again. Every pearl the reader plays
+  now counts, Mark or not. A text pearl read on 1.0.13 wasn't recorded and needs
+  reading once more.
+
 ## [1.0.13]
 ### Fixed
 - Fixed pearls read on the Watcher campaign never showing as read: hollow on the

@@ -26,11 +26,10 @@ namespace ExtendedCollectiblesTracker {
 				return;
 			}
 
-			bool canUnderstandDialog = reader.currentContent != null && reader.currentContent.CanUnderstandDialog();
-			if (!WatcherPearlReads.CountsAsRead(canUnderstandDialog, HasDialog(pearlType))) {
-				return;
-			}
-
+			// Every pearl the reader plays counts, Mark or not. Without the Mark it leaves out a
+			// pearl's spoken dialogue but still plays its images, sound and text, and the Prince
+			// only gives the Mark near the end of the campaign - holding a pearl back until then
+			// would leave it unread for most of the game, with no sign it has to be read again.
 			PlayerProgression progression = game.rainWorld.progression;
 			if (WatcherPearlReads.Add(progression.miscProgressionData.unrecognizedSaveStrings, pearlType.value)) {
 				Mod.Logger.LogInfo($"[ExtendedCollectiblesTracker] Watcher read pearl {pearlType.value}");
@@ -38,16 +37,6 @@ namespace ExtendedCollectiblesTracker {
 				// or quitting before the next hibernation.
 				progression.SaveProgression(saveMaps: false, saveMiscProg: true);
 			}
-		}
-
-		// A pearl without its own content file plays something picked from a folder, which could
-		// be anything, so it waits for the Mark like one known to have dialogue.
-		static bool HasDialog(DataPearl.AbstractDataPearl.DataPearlType pearlType) {
-			string path = PearlContent.ResolveFilePath(pearlType.value.ToLowerInvariant());
-			if (path == null) {
-				return true;
-			}
-			return WatcherPearlReads.HasDialog(PearlContent.LoadPearlProperties(path));
 		}
 	}
 }
